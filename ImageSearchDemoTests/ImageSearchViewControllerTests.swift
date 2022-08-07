@@ -7,16 +7,23 @@
 
 import XCTest
 
-class ImageSearchViewController: UIViewController {
-    
+class ImageSearchViewController: UIViewController, UISearchResultsUpdating {
     let searchController = UISearchController()
+    private(set) var searchTerm = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         title = "Search Images"
         navigationItem.searchController = searchController
+        
+        searchController.searchResultsUpdater = self
     }
     
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let text = searchController.searchBar.text else { return }
+        searchTerm = text
+    }
 }
 
 class ImageSearchViewControllerTests: XCTestCase {
@@ -41,6 +48,24 @@ class ImageSearchViewControllerTests: XCTestCase {
         sut.loadViewIfNeeded()
         
         XCTAssertEqual(sut.navigationItem.searchController, sut.searchController)
+    }
+    
+    func test_connectSearchResultUpdater() {
+        let sut = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        
+        XCTAssertIdentical(sut.searchController.searchResultsUpdater, sut)
+    }
+    
+    func test_searchTerm_updtaeWhenInputTextToSearchBar() {
+        let sut = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        sut.searchController.searchBar.text = "dummy search term"
+        sut.searchController.searchResultsUpdater?.updateSearchResults(for: sut.searchController)
+        
+        XCTAssertEqual(sut.searchTerm, "dummy search term")
     }
     
 }
