@@ -6,10 +6,12 @@
 //
 
 import XCTest
+import Combine
 
 class ImageSearchViewController: UIViewController, UISearchResultsUpdating {
+    
     let searchController = UISearchController()
-    private(set) var searchTerm = ""
+    let searchTerm = CurrentValueSubject<String, Never>("")
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -21,8 +23,7 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating {
     }
     
     func updateSearchResults(for searchController: UISearchController) {
-        guard let text = searchController.searchBar.text else { return }
-        searchTerm = text
+        searchTerm.send(searchController.searchBar.text ?? "")
     }
 }
 
@@ -58,14 +59,28 @@ class ImageSearchViewControllerTests: XCTestCase {
         XCTAssertIdentical(sut.searchController.searchResultsUpdater, sut)
     }
     
-    func test_searchTerm_updtaeWhenInputTextToSearchBar() {
+    func test_searchTerm_initalValueShouldBeEmptyString() {
         let sut = makeSUT()
         
         sut.loadViewIfNeeded()
+        
+        let _ = sut.searchTerm
+            .sink { searchTerm in
+                XCTAssertEqual(searchTerm, "")
+            }
+    }
+    
+    func test_searchTerm_getUpdatedTextFromSearchTermPublisherProperly() {
+        let sut = makeSUT()
+
+        sut.loadViewIfNeeded()
         sut.searchController.searchBar.text = "dummy search term"
         sut.searchController.searchResultsUpdater?.updateSearchResults(for: sut.searchController)
-        
-        XCTAssertEqual(sut.searchTerm, "dummy search term")
+
+        let _ = sut.searchTerm
+            .sink { searchTerm in
+                XCTAssertEqual(searchTerm, "dummy search term")
+            }
     }
     
 }
