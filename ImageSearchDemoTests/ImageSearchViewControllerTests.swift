@@ -8,10 +8,15 @@
 import XCTest
 import Combine
 
-class ImageSearchViewController: UIViewController, UISearchResultsUpdating {
+class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITableViewDataSource, UITableViewDelegate {
     
     let searchController = UISearchController()
     let searchTerm = CurrentValueSubject<String, Never>("")
+    private(set) var tableView: UITableView = {
+        let table = UITableView()
+        
+        return table
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,10 +25,26 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating {
         navigationItem.searchController = searchController
         
         searchController.searchResultsUpdater = self
+        tableView.dataSource = self
+        tableView.delegate = self
+        
+        setupTableView()
+    }
+    
+    private func setupTableView() {
+        view.addSubview(tableView)
     }
     
     func updateSearchResults(for searchController: UISearchController) {
         searchTerm.send(searchController.searchBar.text ?? "")
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        return UITableViewCell()
     }
 }
 
@@ -81,6 +102,23 @@ class ImageSearchViewControllerTests: XCTestCase {
             .sink { searchTerm in
                 XCTAssertEqual(searchTerm, "dummy search term")
             }
+    }
+    
+    func test_tableView_ensureDataSourceAndDelegateNotNil() {
+        let sut = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        
+        XCTAssertNotNil(sut.tableView.dataSource)
+        XCTAssertNotNil(sut.tableView.delegate)
+    }
+    
+    func test_tableView_addedToSubview() {
+        let sut = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        
+        XCTAssertTrue(sut.view.subviews.contains(sut.tableView))
     }
     
 }
