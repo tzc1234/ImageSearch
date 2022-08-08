@@ -17,7 +17,17 @@ struct ImageViewModel {
     let title: String
 }
 
-
+class LoadingView: UIView {
+    static let shared = LoadingView(frame: .zero)
+    
+    func add(to view: UIView) {
+        view.addSubview(self)
+    }
+    
+    func remove(from view: UIView) {
+        removeFromSuperview()
+    }
+}
 
 class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITableViewDataSource, UITableViewDelegate {
     
@@ -61,9 +71,14 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
     }
     
     private func fetchImages() {
+        LoadingView.shared.add(to: view)
+        
         service.fetchImages()
             .receive(on: RunLoop.main)
-            .sink { completion in
+            .sink { [weak self] completion in
+                guard let self = self else { return }
+                LoadingView.shared.remove(from: self.view)
+                
                 switch completion {
                 case .finished:
                     break
@@ -211,6 +226,24 @@ class ImageSearchViewControllerTests: XCTestCase {
         XCTAssertEqual(cell0?.titleLabel.text, "title 0", "cell 0 title")
         XCTAssertEqual(cell1?.titleLabel.text, "title 1", "cell 1 title")
         XCTAssertEqual(cell2?.titleLabel.text, "title 2", "cell 2 title")
+    }
+    
+    func test_loadingView_showHideDependsOnFetchingImages() {
+        let imageViewModels = [
+            ImageViewModel(image: nil, title: "title 0")
+        ]
+        let service = ServiceStub(fetchImagesFuncution: fetchImages(by: imageViewModels))
+        let sut = makeSUT(service: service)
+        
+        sut.loadViewIfNeeded()
+        
+        // Loading
+        XCTAssertEqual(sut.view.subviews.filter({ $0 is LoadingView }).count, 1)
+        
+        executeRunLoop()
+        
+        // End loading
+        XCTAssertEqual(sut.view.subviews.filter({ $0 is LoadingView }).count, 0)
     }
     
 }
