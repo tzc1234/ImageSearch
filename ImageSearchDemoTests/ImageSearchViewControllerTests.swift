@@ -82,26 +82,21 @@ class ImageSearchViewControllerTests: XCTestCase {
     
     func test_searchTerm_initalValueShouldBeEmptyString() {
         let sut = makeSUT()
+        let spy = searchTermPublisherSpy(searchTerm: sut.searchTerm)
         
         sut.loadViewIfNeeded()
         
-        let _ = sut.searchTerm
-            .sink { searchTerm in
-                XCTAssertEqual(searchTerm, "")
-            }
+        XCTAssertEqual(spy.searchTerms, [""])
     }
     
     func test_searchTerm_getUpdatedTextFromSearchTermPublisherProperly() {
         let sut = makeSUT()
+        let spy = searchTermPublisherSpy(searchTerm: sut.searchTerm)
 
         sut.loadViewIfNeeded()
         sut.searchController.searchBar.text = "dummy search term"
-        sut.searchController.searchResultsUpdater?.updateSearchResults(for: sut.searchController)
 
-        let _ = sut.searchTerm
-            .sink { searchTerm in
-                XCTAssertEqual(searchTerm, "dummy search term")
-            }
+        XCTAssertEqual(spy.searchTerms, ["", "dummy search term"])
     }
     
     func test_tableView_ensureDataSourceAndDelegateNotNil() {
@@ -129,5 +124,16 @@ extension ImageSearchViewControllerTests {
         let sut = ImageSearchViewController()
         
         return sut
+    }
+}
+
+private class searchTermPublisherSpy {
+    private(set) var searchTerms = [String]()
+    private var subscription: AnyCancellable?
+    
+    init(searchTerm: CurrentValueSubject<String, Never>) {
+        subscription = searchTerm.sink { [weak self] searchTerm in
+            self?.searchTerms.append(searchTerm)
+        }
     }
 }
