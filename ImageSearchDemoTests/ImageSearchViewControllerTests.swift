@@ -9,7 +9,7 @@ import XCTest
 import Combine
 
 protocol DataService: AnyObject {
-    func fetchImages() -> AnyPublisher<[ImageViewModel], Error>
+    func fetchImages(searchTerm: String, page: Int) -> AnyPublisher<[ImageViewModel], Error>
 }
 
 struct ImageViewModel {
@@ -63,17 +63,18 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
         tableView.delegate = self
         
         setupTableView()
-        fetchImages()
+        fetchImages(searchTerm: "")
+        subscriptSearchTerm()
     }
     
     private func setupTableView() {
         view.addSubview(tableView)
     }
     
-    private func fetchImages() {
+    private func fetchImages(searchTerm: String, page: Int = 1) {
         LoadingView.shared.add(to: view)
         
-        service.fetchImages()
+        service.fetchImages(searchTerm: searchTerm, page: page)
             .receive(on: RunLoop.main)
             .sink { [weak self] completion in
                 guard let self = self else { return }
@@ -90,6 +91,14 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
                 self?.tableView.reloadData()
             }
             .store(in: &subscriptions)
+    }
+    
+    private func subscriptSearchTerm() {
+        searchTerm.sink { [weak self] term in
+            print("term: \(term)")
+            self?.fetchImages(searchTerm: term)
+        }
+        .store(in: &subscriptions)
     }
     
     func updateSearchResults(for searchController: UISearchController) {
@@ -147,7 +156,7 @@ class ImageSearchViewControllerTests: XCTestCase {
     
     func test_searchTerm_initalValueShouldBeEmptyString() {
         let sut = makeSUT()
-        let spy = searchTermPublisherSpy(searchTerm: sut.searchTerm)
+        let spy = SearchTermPublisherSpy(searchTerm: sut.searchTerm)
         
         sut.loadViewIfNeeded()
         
@@ -156,7 +165,7 @@ class ImageSearchViewControllerTests: XCTestCase {
     
     func test_searchTerm_getUpdatedTextFromSearchTermPublisherProperly() {
         let sut = makeSUT()
-        let spy = searchTermPublisherSpy(searchTerm: sut.searchTerm)
+        let spy = SearchTermPublisherSpy(searchTerm: sut.searchTerm)
 
         sut.loadViewIfNeeded()
         sut.searchController.searchBar.text = "dummy search term"
@@ -246,6 +255,25 @@ class ImageSearchViewControllerTests: XCTestCase {
         XCTAssertEqual(sut.view.subviews.filter({ $0 is LoadingView }).count, 0)
     }
     
+    func test_searchTerm_changeToTriggerSearchImages() {
+        let service = ServiceStub(fetchImagesFuncution: fetchImages(by: []))
+        let sut = makeSUT(service: service)
+        
+        sut.loadViewIfNeeded()
+        
+        service.fetchImagesFuncution = fetchImages(by: [
+            ImageViewModel(image: nil, title: "title 0")
+        ])
+        
+        sut.searchController.searchBar.text = "dummy search term"
+        
+        XCTAssertEqual(service.reveicedSearchTerm, "dummy search term", "search term")
+        
+        executeRunLoop()
+        
+        XCTAssertEqual(sut.getCell(row: 0, section: 0)?.titleLabel.text, "title 0", "cell title")
+    }
+    
 }
 
 // MARK: - Helpers
@@ -281,7 +309,7 @@ private extension ImageSearchViewController {
     }
 }
 
-private class searchTermPublisherSpy {
+private class SearchTermPublisherSpy {
     private(set) var searchTerms = [String]()
     private var subscription: AnyCancellable?
     
@@ -296,12 +324,14 @@ typealias FetchImagesFuction = (() -> AnyPublisher<[ImageViewModel], Error>)
 
 private class ServiceStub: DataService {
     var fetchImagesFuncution: FetchImagesFuction
+    private(set) var reveicedSearchTerm = ""
     
     init(fetchImagesFuncution: @escaping FetchImagesFuction) {
         self.fetchImagesFuncution = fetchImagesFuncution
     }
     
-    func fetchImages() -> AnyPublisher<[ImageViewModel], Error> {
-        fetchImagesFuncution()
+    func fetchImages(searchTerm: String, page: Int) -> AnyPublisher<[ImageViewModel], Error> {
+        reveicedSearchTerm = searchTerm
+        return fetchImagesFuncution()
     }
 }
