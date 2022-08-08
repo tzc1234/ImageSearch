@@ -63,7 +63,6 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
         tableView.delegate = self
         
         setupTableView()
-        fetchImages(searchTerm: "")
         subscriptSearchTerm()
     }
     
@@ -94,12 +93,13 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
     }
     
     private func subscriptSearchTerm() {
-        searchTerm.sink { [weak self] term in
-            print("term: \(term)")
-            self?.fetchImages(searchTerm: term)
-        }
-        .store(in: &subscriptions)
+        searchTerm
+            .sink { [weak self] term in
+                self?.fetchImages(searchTerm: term)
+            }
+            .store(in: &subscriptions)
     }
+    
     
     func updateSearchResults(for searchController: UISearchController) {
         searchTerm.send(searchController.searchBar.text ?? "")
@@ -163,16 +163,6 @@ class ImageSearchViewControllerTests: XCTestCase {
         XCTAssertEqual(spy.searchTerms, [""])
     }
     
-    func test_searchTerm_getUpdatedTextFromSearchTermPublisherProperly() {
-        let sut = makeSUT()
-        let spy = SearchTermPublisherSpy(searchTerm: sut.searchTerm)
-
-        sut.loadViewIfNeeded()
-        sut.searchController.searchBar.text = "dummy search term"
-
-        XCTAssertEqual(spy.searchTerms, ["", "dummy search term"])
-    }
-    
     func test_tableView_ensureDataSourceAndDelegateNotNil() {
         let sut = makeSUT()
         
@@ -190,28 +180,34 @@ class ImageSearchViewControllerTests: XCTestCase {
         XCTAssertTrue(sut.view.subviews.contains(sut.tableView))
     }
     
-    func test_zeroTableViewCell() {
-        let sut = makeSUT()
-        
-        sut.loadViewIfNeeded()
-        executeRunLoop()
-        
-        XCTAssertEqual(numberOfRows(tableView: sut.tableView, section: 0), 0)
-    }
-    
-    func test_oneTableViewCell_ensureTitleCorrect() {
-        let imageViewModels = [
-            ImageViewModel(image: nil, title: "title 0")
-        ]
-        let service = ServiceStub(fetchImagesFuncution: fetchImages(by: imageViewModels))
+    func test_tableView_zeroCellAfterInitalCall() {
+        let service = ServiceStub(fetchImagesFuncution: fetchImages(by: []))
         let sut = makeSUT(service: service)
         
         sut.loadViewIfNeeded()
         executeRunLoop()
         
-        XCTAssertEqual(numberOfRows(tableView: sut.tableView, section: 0), 1, "number of rows")
+        XCTAssertEqual(service.fetchImagesTriggerCount, 1, "fetchImagesTriggerCount")
+        XCTAssertEqual(service.lastReveicedSearchTerm, "", "lastReveicedSearchTerm")
+        XCTAssertEqual(numberOfRows(tableView: sut.tableView, section: 0), 0, "numberOfRows")
+    }
+    
+    
+    func test_tableView_oneTableViewCell_ensureTitleCorrect() {
+        let viewModels = [ImageViewModel(image: nil, title: "dummay title")]
+        let service = ServiceStub(fetchImagesFuncution: fetchImages(by: viewModels))
+        let sut = makeSUT(service: service)
+        
+        XCTAssertEqual(service.lastReveicedSearchTerm, "", "lastReveicedSearchTerm")
+        
+        sut.loadViewIfNeeded()
+        sut.searchController.searchBar.text = "dummy search term"
+        executeRunLoop()
+        
+        XCTAssertEqual(service.fetchImagesTriggerCount, 2, "fetchImagesTriggerCount")
+        XCTAssertEqual(service.lastReveicedSearchTerm, "dummy search term", "lastReveicedSearchTerm")
         let cell = sut.getCell(row: 0, section: 0)
-        XCTAssertEqual(cell?.titleLabel.text, "title 0", "title")
+        XCTAssertEqual(cell?.titleLabel.text, "dummay title", "title")
     }
     
     func test_threeTableViewCells_ensureTitlesAllCorrect() {
@@ -222,55 +218,54 @@ class ImageSearchViewControllerTests: XCTestCase {
         ]
         let service = ServiceStub(fetchImagesFuncution: fetchImages(by: imageViewModels))
         let sut = makeSUT(service: service)
-        
+
         sut.loadViewIfNeeded()
         executeRunLoop()
-        
+
         XCTAssertEqual(numberOfRows(tableView: sut.tableView, section: 0), 3, "number of rows")
-        
+
         let cell0 = sut.getCell(row: 0, section: 0)
         let cell1 = sut.getCell(row: 1, section: 0)
         let cell2 = sut.getCell(row: 2, section: 0)
-        
         XCTAssertEqual(cell0?.titleLabel.text, "title 0", "cell 0 title")
         XCTAssertEqual(cell1?.titleLabel.text, "title 1", "cell 1 title")
         XCTAssertEqual(cell2?.titleLabel.text, "title 2", "cell 2 title")
     }
-    
+
     func test_loadingView_showHideDependsOnFetchingImages() {
-        let imageViewModels = [
-            ImageViewModel(image: nil, title: "title 0")
-        ]
+        let imageViewModels = [ImageViewModel(image: nil, title: "title 0")]
         let service = ServiceStub(fetchImagesFuncution: fetchImages(by: imageViewModels))
         let sut = makeSUT(service: service)
-        
+
         sut.loadViewIfNeeded()
-        
+
         // Loading
         XCTAssertEqual(sut.view.subviews.filter({ $0 is LoadingView }).count, 1)
-        
+
         executeRunLoop()
-        
+
         // End loading
         XCTAssertEqual(sut.view.subviews.filter({ $0 is LoadingView }).count, 0)
     }
-    
+
     func test_searchTerm_changeToTriggerSearchImages() {
         let service = ServiceStub(fetchImagesFuncution: fetchImages(by: []))
         let sut = makeSUT(service: service)
-        
+
         sut.loadViewIfNeeded()
         
+        XCTAssertEqual(service.lastReveicedSearchTerm, "", "lastReveicedSearchTerm")
+
+        // Change fetched ImageViewModels
         service.fetchImagesFuncution = fetchImages(by: [
             ImageViewModel(image: nil, title: "title 0")
         ])
-        
+        // Change search term
         sut.searchController.searchBar.text = "dummy search term"
-        
-        XCTAssertEqual(service.reveicedSearchTerm, "dummy search term", "search term")
-        
+
         executeRunLoop()
-        
+
+        XCTAssertEqual(service.lastReveicedSearchTerm, "dummy search term", "lastReveicedSearchTerm")
         XCTAssertEqual(sut.getCell(row: 0, section: 0)?.titleLabel.text, "title 0", "cell title")
     }
     
@@ -324,14 +319,16 @@ typealias FetchImagesFuction = (() -> AnyPublisher<[ImageViewModel], Error>)
 
 private class ServiceStub: DataService {
     var fetchImagesFuncution: FetchImagesFuction
-    private(set) var reveicedSearchTerm = ""
+    private(set) var lastReveicedSearchTerm = ""
+    private(set) var fetchImagesTriggerCount = 0
     
     init(fetchImagesFuncution: @escaping FetchImagesFuction) {
         self.fetchImagesFuncution = fetchImagesFuncution
     }
     
     func fetchImages(searchTerm: String, page: Int) -> AnyPublisher<[ImageViewModel], Error> {
-        reveicedSearchTerm = searchTerm
+        fetchImagesTriggerCount += 1
+        lastReveicedSearchTerm = searchTerm
         return fetchImagesFuncution()
     }
 }
