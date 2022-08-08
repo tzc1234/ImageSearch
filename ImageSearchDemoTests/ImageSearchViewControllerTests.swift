@@ -253,8 +253,7 @@ class ImageSearchViewControllerTests: XCTestCase {
 extension ImageSearchViewControllerTests {
     func makeSUT() -> ImageSearchViewController {
         let service = ServiceStub(fetchImagesFuncution: fetchImages(by: []))
-        let sut = ImageSearchViewController(service: service)
-        return sut
+        return makeSUT(service: service)
     }
     
     func makeSUT(service: DataService) -> ImageSearchViewController {
