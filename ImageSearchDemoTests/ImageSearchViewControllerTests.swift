@@ -17,34 +17,7 @@ struct ImageViewModel {
     let title: String
 }
 
-class ImageTableViewCell: UITableViewCell {
-    static let identifier = String(describing: ImageTableViewCell.self)
-    
-    lazy var titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 18, weight: .bold)
-        return label
-    }()
-    
-    var imageViewModel: ImageViewModel? {
-        didSet {
-            titleLabel.text = imageViewModel?.title
-        }
-    }
-    
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        setupViews()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    private func setupViews() {
-        contentView.addSubview(titleLabel)
-    }
-}
+
 
 class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITableViewDataSource, UITableViewDelegate {
     
@@ -119,7 +92,7 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
             return ImageTableViewCell()
         }
         
-        cell.imageViewModel = imageViewModels[indexPath.row]
+        cell.viewModel = imageViewModels[indexPath.row]
         
         return cell
     }
@@ -259,7 +232,7 @@ extension ImageSearchViewControllerTests {
     }
 }
 
-extension ImageSearchViewController {
+private extension ImageSearchViewController {
     func getCell(row: Int, section: Int) -> ImageTableViewCell? {
         tableView.dataSource?.tableView(tableView, cellForRowAt: .init(row: row, section: section)) as? ImageTableViewCell
     }
