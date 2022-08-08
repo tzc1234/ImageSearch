@@ -8,15 +8,49 @@
 import XCTest
 import Combine
 
+protocol DataService: AnyObject {
+    func fetchImages() -> AnyPublisher<[ImageViewModel], Error>
+}
+
+struct ImageViewModel {
+    let image: UIImage?
+    let title: String
+}
+
+class ImageTableViewCell: UITableViewCell {
+    static let identifier = String(describing: ImageTableViewCell.self)
+    
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
 class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITableViewDataSource, UITableViewDelegate {
     
     let searchController = UISearchController()
     let searchTerm = CurrentValueSubject<String, Never>("")
     private(set) var tableView: UITableView = {
         let table = UITableView()
-        
+        table.register(ImageTableViewCell.self, forCellReuseIdentifier: ImageTableViewCell.identifier)
         return table
     }()
+    private var imageViewModels = [ImageViewModel]()
+    private var subscriptions = Set<AnyCancellable>()
+    
+    private let service: DataService
+    
+    init(service: DataService) {
+        self.service = service
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,10 +63,28 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
         tableView.delegate = self
         
         setupTableView()
+        fetchImages()
     }
     
     private func setupTableView() {
         view.addSubview(tableView)
+    }
+    
+    private func fetchImages() {
+        service.fetchImages()
+            .receive(on: RunLoop.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            } receiveValue: { [weak self] imageViewModels in
+                self?.imageViewModels = imageViewModels
+                self?.tableView.reloadData()
+            }
+            .store(in: &subscriptions)
     }
     
     func updateSearchResults(for searchController: UISearchController) {
@@ -40,11 +92,17 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return imageViewModels.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return UITableViewCell()
+        guard
+            let cell = tableView.dequeueReusableCell(withIdentifier: ImageTableViewCell.identifier, for: indexPath) as? ImageTableViewCell
+        else {
+            return ImageTableViewCell()
+        }
+        
+        return cell
     }
 }
 
@@ -116,14 +174,46 @@ class ImageSearchViewControllerTests: XCTestCase {
         XCTAssertTrue(sut.view.subviews.contains(sut.tableView))
     }
     
+    func test_zeroTableViewCell() {
+        let sut = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        executeRunLoop()
+        
+        XCTAssertEqual(numberOfRows(tableView: sut.tableView, section: 0), 0)
+    }
+    
+    func test_oneTableViewCell() {
+        let imageViewModels = [
+            ImageViewModel(image: nil, title: "view model 0")
+        ]
+        let service = ServiceStub(imageViewModels: imageViewModels)
+        let sut = makeSUT(service: service)
+        
+        sut.loadViewIfNeeded()
+        executeRunLoop()
+        
+        XCTAssertEqual(numberOfRows(tableView: sut.tableView, section: 0), 1)
+        
+        let cell = sut.tableView(sut.tableView, cellForRowAt: IndexPath(row: 0, section: 0)) as? ImageTableViewCell
+        XCTAssertNotNil(cell)
+    }
 }
 
 // MARK: - Helpers
 extension ImageSearchViewControllerTests {
-    func makeSUT() -> ImageSearchViewController {
-        let sut = ImageSearchViewController()
-        
+    func makeSUT(service: DataService = ServiceStub(imageViewModels: [])) -> ImageSearchViewController {
+        let sut = ImageSearchViewController(service: service)
         return sut
+    }
+    
+    func numberOfRows(tableView: UITableView?, section: Int) -> Int? {
+        guard let tableView = tableView else { return nil }
+        return tableView.dataSource?.tableView(tableView, numberOfRowsInSection: section)
+    }
+    
+    func executeRunLoop() {
+        RunLoop.main.run(until: Date())
     }
 }
 
@@ -135,5 +225,17 @@ private class searchTermPublisherSpy {
         subscription = searchTerm.sink { [weak self] searchTerm in
             self?.searchTerms.append(searchTerm)
         }
+    }
+}
+
+private class ServiceStub: DataService {
+    private(set) var imageViewModels: [ImageViewModel]
+    
+    init(imageViewModels: [ImageViewModel]) {
+        self.imageViewModels = imageViewModels
+    }
+    
+    func fetchImages() -> AnyPublisher<[ImageViewModel], Error> {
+        Just(imageViewModels).setFailureType(to: Error.self).eraseToAnyPublisher()
     }
 }
