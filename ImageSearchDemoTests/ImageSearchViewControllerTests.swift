@@ -217,6 +217,29 @@ class ImageSearchViewControllerTests: XCTestCase {
         XCTAssertEqual(cell?.titleLabel.text, "title 0", "title")
     }
     
+    func test_threeTableViewCells_ensureTitlesAllCorrect() {
+        let imageViewModels = [
+            ImageViewModel(image: nil, title: "title 0"),
+            ImageViewModel(image: nil, title: "title 1"),
+            ImageViewModel(image: nil, title: "title 2")
+        ]
+        let service = ServiceStub(imageViewModels: imageViewModels)
+        let sut = makeSUT(service: service)
+        
+        sut.loadViewIfNeeded()
+        executeRunLoop()
+        
+        XCTAssertEqual(numberOfRows(tableView: sut.tableView, section: 0), 3, "number of rows")
+        
+        let cell0 = sut.getCell(row: 0, section: 0)
+        let cell1 = sut.getCell(row: 1, section: 0)
+        let cell2 = sut.getCell(row: 2, section: 0)
+        
+        XCTAssertEqual(cell0?.titleLabel.text, "title 0", "cell 0 title")
+        XCTAssertEqual(cell1?.titleLabel.text, "title 1", "cell 1 title")
+        XCTAssertEqual(cell2?.titleLabel.text, "title 2", "cell 2 title")
+    }
+    
 }
 
 // MARK: - Helpers
