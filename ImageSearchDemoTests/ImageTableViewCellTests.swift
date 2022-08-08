@@ -10,13 +10,13 @@ import XCTest
 class ImageTableViewCell: UITableViewCell {
     static let identifier = String(describing: ImageTableViewCell.self)
     
-    lazy var photoImageView: UIImageView = {
+    lazy private(set) var photoImageView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleToFill
         return iv
     }()
     
-    lazy var titleLabel: UILabel = {
+    lazy private(set) var titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 18, weight: .bold)
         return label

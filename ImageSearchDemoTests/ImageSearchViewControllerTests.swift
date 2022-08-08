@@ -179,7 +179,7 @@ class ImageSearchViewControllerTests: XCTestCase {
         let imageViewModels = [
             ImageViewModel(image: nil, title: "title 0")
         ]
-        let service = ServiceStub(imageViewModels: imageViewModels)
+        let service = ServiceStub(fetchImagesFuncution: fetchImages(by: imageViewModels))
         let sut = makeSUT(service: service)
         
         sut.loadViewIfNeeded()
@@ -196,7 +196,7 @@ class ImageSearchViewControllerTests: XCTestCase {
             ImageViewModel(image: nil, title: "title 1"),
             ImageViewModel(image: nil, title: "title 2")
         ]
-        let service = ServiceStub(imageViewModels: imageViewModels)
+        let service = ServiceStub(fetchImagesFuncution: fetchImages(by: imageViewModels))
         let sut = makeSUT(service: service)
         
         sut.loadViewIfNeeded()
@@ -216,8 +216,15 @@ class ImageSearchViewControllerTests: XCTestCase {
 }
 
 // MARK: - Helpers
+
 extension ImageSearchViewControllerTests {
-    func makeSUT(service: DataService = ServiceStub(imageViewModels: [])) -> ImageSearchViewController {
+    func makeSUT() -> ImageSearchViewController {
+        let service = ServiceStub(fetchImagesFuncution: fetchImages(by: []))
+        let sut = ImageSearchViewController(service: service)
+        return sut
+    }
+    
+    func makeSUT(service: DataService) -> ImageSearchViewController {
         let sut = ImageSearchViewController(service: service)
         return sut
     }
@@ -229,6 +236,10 @@ extension ImageSearchViewControllerTests {
     
     func executeRunLoop() {
         RunLoop.main.run(until: Date())
+    }
+    
+    func fetchImages(by imageViewModels: [ImageViewModel]) -> FetchImagesFuction {
+        { Just(imageViewModels).setFailureType(to: Error.self).eraseToAnyPublisher() }
     }
 }
 
@@ -249,14 +260,16 @@ private class searchTermPublisherSpy {
     }
 }
 
+typealias FetchImagesFuction = (() -> AnyPublisher<[ImageViewModel], Error>)
+
 private class ServiceStub: DataService {
-    private(set) var imageViewModels: [ImageViewModel]
+    var fetchImagesFuncution: FetchImagesFuction
     
-    init(imageViewModels: [ImageViewModel]) {
-        self.imageViewModels = imageViewModels
+    init(fetchImagesFuncution: @escaping FetchImagesFuction) {
+        self.fetchImagesFuncution = fetchImagesFuncution
     }
     
     func fetchImages() -> AnyPublisher<[ImageViewModel], Error> {
-        Just(imageViewModels).setFailureType(to: Error.self).eraseToAnyPublisher()
+        fetchImagesFuncution()
     }
 }
