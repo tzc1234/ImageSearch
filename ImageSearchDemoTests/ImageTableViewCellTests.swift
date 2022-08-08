@@ -10,20 +10,21 @@ import XCTest
 class ImageTableViewCell: UITableViewCell {
     static let identifier = String(describing: ImageTableViewCell.self)
     
-    lazy var titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 18, weight: .bold)
-        return label
-    }()
-    
     lazy var photoImageView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleToFill
         return iv
     }()
     
+    lazy var titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 18, weight: .bold)
+        return label
+    }()
+    
     var viewModel: ImageViewModel? {
         didSet {
+            photoImageView.image = viewModel?.image
             titleLabel.text = viewModel?.title
         }
     }
@@ -38,27 +39,37 @@ class ImageTableViewCell: UITableViewCell {
     }
     
     private func setupViews() {
-        contentView.addSubview(titleLabel)
         contentView.addSubview(photoImageView)
+        contentView.addSubview(titleLabel)
     }
 }
 
 class ImageTableViewCellTests: XCTestCase {
 
-    func test_titleLabelAndphotoImageView_ensureImageViewAddedToContentViewSubviews() {
+    func test_titleLabelAndPhotoImageView_ensureImageViewAddedToContentViewSubviews() {
         let sut = makeSUT()
         
         XCTAssertTrue(sut.contentView.subviews.contains(sut.titleLabel))
         XCTAssertTrue(sut.contentView.subviews.contains(sut.photoImageView))
     }
     
-    func test_titleLabel_ensureTitleLabelTextIsSameAsViewModel() {
+    func test_titleLabel_ensureTitleLabelTextIsSameAsViewModelOne() {
         let sut = makeSUT()
         let viewModel = ImageViewModel(image: nil, title: "dummy title")
         
         sut.viewModel = viewModel
         
         XCTAssertEqual(sut.titleLabel.text, "dummy title")
+    }
+    
+    func test_photoImageView_ensureImageIsTheSameAsViewModelOne() {
+        let sut = makeSUT()
+        let image = UIImage()
+        let viewModel = ImageViewModel(image: image, title: "")
+        
+        sut.viewModel = viewModel
+        
+        XCTAssertIdentical(sut.photoImageView.image, image)
     }
     
 }
