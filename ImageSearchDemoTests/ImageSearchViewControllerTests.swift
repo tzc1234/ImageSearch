@@ -20,12 +20,29 @@ struct ImageViewModel {
 class ImageTableViewCell: UITableViewCell {
     static let identifier = String(describing: ImageTableViewCell.self)
     
+    lazy var titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 18, weight: .bold)
+        return label
+    }()
+    
+    var imageViewModel: ImageViewModel? {
+        didSet {
+            titleLabel.text = imageViewModel?.title
+        }
+    }
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupViews()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setupViews() {
+        contentView.addSubview(titleLabel)
     }
 }
 
@@ -101,6 +118,8 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
         else {
             return ImageTableViewCell()
         }
+        
+        cell.imageViewModel = imageViewModels[indexPath.row]
         
         return cell
     }
@@ -183,9 +202,9 @@ class ImageSearchViewControllerTests: XCTestCase {
         XCTAssertEqual(numberOfRows(tableView: sut.tableView, section: 0), 0)
     }
     
-    func test_oneTableViewCell() {
+    func test_oneTableViewCell_ensureTitleCorrect() {
         let imageViewModels = [
-            ImageViewModel(image: nil, title: "view model 0")
+            ImageViewModel(image: nil, title: "title 0")
         ]
         let service = ServiceStub(imageViewModels: imageViewModels)
         let sut = makeSUT(service: service)
@@ -193,11 +212,11 @@ class ImageSearchViewControllerTests: XCTestCase {
         sut.loadViewIfNeeded()
         executeRunLoop()
         
-        XCTAssertEqual(numberOfRows(tableView: sut.tableView, section: 0), 1)
-        
-        let cell = sut.tableView(sut.tableView, cellForRowAt: IndexPath(row: 0, section: 0)) as? ImageTableViewCell
-        XCTAssertNotNil(cell)
+        XCTAssertEqual(numberOfRows(tableView: sut.tableView, section: 0), 1, "number of rows")
+        let cell = sut.getCell(row: 0, section: 0)
+        XCTAssertEqual(cell?.titleLabel.text, "title 0", "title")
     }
+    
 }
 
 // MARK: - Helpers
@@ -214,6 +233,12 @@ extension ImageSearchViewControllerTests {
     
     func executeRunLoop() {
         RunLoop.main.run(until: Date())
+    }
+}
+
+extension ImageSearchViewController {
+    func getCell(row: Int, section: Int) -> ImageTableViewCell? {
+        tableView.dataSource?.tableView(tableView, cellForRowAt: .init(row: row, section: section)) as? ImageTableViewCell
     }
 }
 
