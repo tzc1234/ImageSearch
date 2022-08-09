@@ -14,7 +14,7 @@ protocol DataService: AnyObject {
 
 class PreviewService: DataService {
     let imageViewModels = [
-        ImageViewModel(image: nil, title: "Title 0"),
+        ImageViewModel(image: nil, title: "Title 0\n2nd row"),
         ImageViewModel(image: nil, title: "Title 1"),
         ImageViewModel(image: nil, title: "Title 2")
     ]

@@ -9,15 +9,8 @@ import XCTest
 @testable import ImageSearchDemo
 
 class ImageTableViewCellTests: XCTestCase {
-
-    func test_titleLabelAndPhotoImageView_ensureImageViewAddedToContentViewSubviews() {
-        let sut = makeSUT()
-        
-        XCTAssertTrue(sut.contentView.subviews.contains(sut.titleLabel))
-        XCTAssertTrue(sut.contentView.subviews.contains(sut.photoImageView))
-    }
     
-    func test_titleLabel_ensureTitleLabelTextIsSameAsViewModelOne() {
+    func test_titleLabel_ensureTitleLabelTextIsSameAsViewModelTitleValue() {
         let sut = makeSUT()
         let viewModel = ImageViewModel(image: nil, title: "dummy title")
         
@@ -26,7 +19,7 @@ class ImageTableViewCellTests: XCTestCase {
         XCTAssertEqual(sut.titleLabel.text, "dummy title")
     }
     
-    func test_photoImageView_ensureImageIsTheSameAsViewModelOne() {
+    func test_photoImageView_ensureImageIsTheSameAsViewModelTitleValue() {
         let sut = makeSUT()
         let image = UIImage()
         let viewModel = ImageViewModel(image: image, title: "")

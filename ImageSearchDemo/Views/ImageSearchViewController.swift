@@ -38,6 +38,7 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
         title = "Search Images"
         navigationItem.searchController = searchController
         view.backgroundColor = .systemBackground
+        tableView.separatorStyle = .none
         
         searchController.searchResultsUpdater = self
         tableView.dataSource = self

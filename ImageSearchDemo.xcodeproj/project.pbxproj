@@ -114,8 +114,8 @@
 			isa = PBXGroup;
 			children = (
 				BE41A96728A26198000EB7DC /* LoadingView.swift */,
-				BE41A96228A260FE000EB7DC /* ImageSearchViewController.swift */,
 				BE41A96528A2615B000EB7DC /* ImageTableViewCell.swift */,
+				BE41A96228A260FE000EB7DC /* ImageSearchViewController.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
