@@ -182,7 +182,7 @@ class ImageSearchViewControllerTests: XCTestCase {
         XCTAssertEqual(service.lastReveicedSearchTerm, "", "lastReveicedSearchTerm")
         
         sut.loadViewIfNeeded()
-        sut.searchController.searchBar.text = "dummy search term"
+        sut.updateSearchBarText(to: "dummy search term")
         executeRunLoop()
         
         XCTAssertEqual(service.lastReveicedSearchTerm, "dummy search term", "lastReveicedSearchTerm")
@@ -200,7 +200,7 @@ class ImageSearchViewControllerTests: XCTestCase {
         let sut = makeSUT(service: service)
 
         sut.loadViewIfNeeded()
-        sut.searchController.searchBar.text = "dummy search term"
+        sut.updateSearchBarText(to: "dummy search term")
         executeRunLoop()
 
         let cell0 = sut.getCell(row: 0, section: 0)
@@ -217,7 +217,7 @@ class ImageSearchViewControllerTests: XCTestCase {
         let sut = makeSUT(service: service)
 
         sut.loadViewIfNeeded()
-        sut.searchController.searchBar.text = "dummy search term"
+        sut.updateSearchBarText(to: "dummy search term")
 
         // Loading
         XCTAssertEqual(sut.view.subviews.filter({ $0 is LoadingView }).count, 1)
@@ -241,7 +241,7 @@ class ImageSearchViewControllerTests: XCTestCase {
             ImageViewModel(image: nil, title: "title 0")
         ])
         // Change search term
-        sut.searchController.searchBar.text = "dummy search term"
+        sut.updateSearchBarText(to: "dummy search term")
 
         executeRunLoop()
 
@@ -281,6 +281,10 @@ extension ImageSearchViewControllerTests {
 private extension ImageSearchViewController {
     func getCell(row: Int, section: Int) -> ImageTableViewCell? {
         tableView.dataSource?.tableView(tableView, cellForRowAt: .init(row: row, section: section)) as? ImageTableViewCell
+    }
+    
+    func updateSearchBarText(to text: String) {
+        searchController.searchBar.text = text
     }
 }
 
