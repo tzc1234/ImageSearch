@@ -19,6 +19,7 @@ class LoadingView: UIView {
     convenience init() {
         self.init(frame: .zero)
         indicator.center = center
+        backgroundColor = .darkGray.withAlphaComponent(0.7)
     }
     
     func add(to view: UIView) {

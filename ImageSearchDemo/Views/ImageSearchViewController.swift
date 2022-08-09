@@ -15,6 +15,7 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
     private(set) var tableView: UITableView = {
         let table = UITableView()
         table.register(ImageTableViewCell.self, forCellReuseIdentifier: ImageTableViewCell.identifier)
+        table.translatesAutoresizingMaskIntoConstraints = false
         return table
     }()
     private var imageViewModels = [ImageViewModel]()
@@ -47,6 +48,13 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
     
     private func setupTableView() {
         view.addSubview(tableView)
+        
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            tableView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            tableView.widthAnchor.constraint(equalTo: view.widthAnchor)
+        ])
     }
     
     private func fetchImages(searchTerm: String, page: Int = 1) {

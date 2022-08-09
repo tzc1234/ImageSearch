@@ -13,13 +13,17 @@ class ImageTableViewCell: UITableViewCell {
     let photoImageView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleToFill
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        iv.backgroundColor = .red
         return iv
     }()
     
     let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 18, weight: .bold)
-        return label
+        let l = UILabel()
+        l.font = .systemFont(ofSize: 18, weight: .bold)
+        l.translatesAutoresizingMaskIntoConstraints = false
+        l.backgroundColor = .green
+        return l
     }()
     
     var viewModel: ImageViewModel? {
@@ -31,6 +35,7 @@ class ImageTableViewCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        selectionStyle = .none
         setupViews()
     }
     
@@ -41,5 +46,16 @@ class ImageTableViewCell: UITableViewCell {
     private func setupViews() {
         contentView.addSubview(photoImageView)
         contentView.addSubview(titleLabel)
+        
+        NSLayoutConstraint.activate([
+            photoImageView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            photoImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
+            photoImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
+            photoImageView.bottomAnchor.constraint(equalTo: titleLabel.topAnchor, constant: 6),
+            
+            titleLabel.widthAnchor.constraint(equalTo: photoImageView.widthAnchor),
+            titleLabel.centerXAnchor.constraint(equalTo: photoImageView.centerXAnchor),
+            titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+        ])
     }
 }
