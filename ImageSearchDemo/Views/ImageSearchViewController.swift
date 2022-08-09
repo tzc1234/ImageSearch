@@ -8,10 +8,6 @@
 import UIKit
 import Combine
 
-protocol DataService: AnyObject {
-    func fetchImages(searchTerm: String, page: Int) -> AnyPublisher<[ImageViewModel], Error>
-}
-
 class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITableViewDataSource, UITableViewDelegate {
     
     let searchController = UISearchController()
@@ -40,6 +36,7 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
         
         title = "Search Images"
         navigationItem.searchController = searchController
+        view.backgroundColor = .systemBackground
         
         searchController.searchResultsUpdater = self
         tableView.dataSource = self

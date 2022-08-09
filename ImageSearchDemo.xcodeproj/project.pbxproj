@@ -18,6 +18,7 @@
 		BE41A96628A2615B000EB7DC /* ImageTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE41A96528A2615B000EB7DC /* ImageTableViewCell.swift */; };
 		BE41A96828A26198000EB7DC /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE41A96728A26198000EB7DC /* LoadingView.swift */; };
 		BE41A96A28A26226000EB7DC /* ImageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE41A96928A26226000EB7DC /* ImageViewModel.swift */; };
+		BE41A96D28A2638B000EB7DC /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE41A96C28A2638B000EB7DC /* DataService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +46,7 @@
 		BE41A96528A2615B000EB7DC /* ImageTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageTableViewCell.swift; sourceTree = "<group>"; };
 		BE41A96728A26198000EB7DC /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		BE41A96928A26226000EB7DC /* ImageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewModel.swift; sourceTree = "<group>"; };
+		BE41A96C28A2638B000EB7DC /* DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +92,7 @@
 				BE353588289FA7F000BB6B3E /* SceneDelegate.swift */,
 				BE41A96128A260C2000EB7DC /* ViewModels */,
 				BE41A96028A260A9000EB7DC /* Views */,
+				BE41A96B28A2636E000EB7DC /* DataServices */,
 				BE35358F289FA7F000BB6B3E /* Assets.xcassets */,
 				BE353591289FA7F000BB6B3E /* LaunchScreen.storyboard */,
 				BE353594289FA7F000BB6B3E /* Info.plist */,
@@ -123,6 +126,14 @@
 				BE41A96928A26226000EB7DC /* ImageViewModel.swift */,
 			);
 			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		BE41A96B28A2636E000EB7DC /* DataServices */ = {
+			isa = PBXGroup;
+			children = (
+				BE41A96C28A2638B000EB7DC /* DataService.swift */,
+			);
+			path = DataServices;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -227,6 +238,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BE41A96A28A26226000EB7DC /* ImageViewModel.swift in Sources */,
+				BE41A96D28A2638B000EB7DC /* DataService.swift in Sources */,
 				BE353587289FA7F000BB6B3E /* AppDelegate.swift in Sources */,
 				BE41A96628A2615B000EB7DC /* ImageTableViewCell.swift in Sources */,
 				BE353589289FA7F000BB6B3E /* SceneDelegate.swift in Sources */,
