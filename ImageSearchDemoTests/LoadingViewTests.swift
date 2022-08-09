@@ -6,29 +6,7 @@
 //
 
 import XCTest
-
-class LoadingView: UIView {
-    static let shared = LoadingView()
-    
-    let indicator: UIActivityIndicatorView = {
-        let ind = UIActivityIndicatorView(style: .large)
-        ind.startAnimating()
-        return ind
-    }()
-    
-    convenience init() {
-        self.init(frame: .zero)
-        indicator.center = center
-    }
-    
-    func add(to view: UIView) {
-        view.addSubview(self)
-    }
-    
-    func remove(from view: UIView) {
-        removeFromSuperview()
-    }
-}
+@testable import ImageSearchDemo
 
 class LoadingViewTests: XCTestCase {
 
