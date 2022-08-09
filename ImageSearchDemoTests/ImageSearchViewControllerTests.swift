@@ -32,7 +32,7 @@ class LoadingView: UIView {
 class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITableViewDataSource, UITableViewDelegate {
     
     let searchController = UISearchController()
-    let searchTerm = CurrentValueSubject<String, Never>("")
+    
     private(set) var tableView: UITableView = {
         let table = UITableView()
         table.register(ImageTableViewCell.self, forCellReuseIdentifier: ImageTableViewCell.identifier)
@@ -63,7 +63,6 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
         tableView.delegate = self
         
         setupTableView()
-        subscriptSearchTerm()
     }
     
     private func setupTableView() {
@@ -92,17 +91,9 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
             .store(in: &subscriptions)
     }
     
-    private func subscriptSearchTerm() {
-        searchTerm
-            .sink { [weak self] term in
-                self?.fetchImages(searchTerm: term)
-            }
-            .store(in: &subscriptions)
-    }
-    
-    
     func updateSearchResults(for searchController: UISearchController) {
-        searchTerm.send(searchController.searchBar.text ?? "")
+        guard let text = searchController.searchBar.text else { return }
+        fetchImages(searchTerm: text)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -154,15 +145,6 @@ class ImageSearchViewControllerTests: XCTestCase {
         XCTAssertIdentical(sut.searchController.searchResultsUpdater, sut)
     }
     
-    func test_searchTerm_initalValueShouldBeEmptyString() {
-        let sut = makeSUT()
-        let spy = SearchTermPublisherSpy(searchTerm: sut.searchTerm)
-        
-        sut.loadViewIfNeeded()
-        
-        XCTAssertEqual(spy.searchTerms, [""])
-    }
-    
     func test_tableView_ensureDataSourceAndDelegateNotNil() {
         let sut = makeSUT()
         
@@ -172,7 +154,7 @@ class ImageSearchViewControllerTests: XCTestCase {
         XCTAssertNotNil(sut.tableView.delegate)
     }
     
-    func test_tableView_addedToSubview() {
+    func test_tableView_ensureAddedToSubviews() {
         let sut = makeSUT()
         
         sut.loadViewIfNeeded()
@@ -180,14 +162,14 @@ class ImageSearchViewControllerTests: XCTestCase {
         XCTAssertTrue(sut.view.subviews.contains(sut.tableView))
     }
     
-    func test_tableView_zeroCellAfterInitalCall() {
-        let service = ServiceStub(fetchImagesFuncution: fetchImages(by: []))
+    func test_tableView_zeroCellAfterInital() {
+        let viewModels = [ImageViewModel(image: nil, title: "dummay title")]
+        let service = ServiceStub(fetchImagesFuncution: fetchImages(by: viewModels))
         let sut = makeSUT(service: service)
         
         sut.loadViewIfNeeded()
         executeRunLoop()
         
-        XCTAssertEqual(service.fetchImagesTriggerCount, 1, "fetchImagesTriggerCount")
         XCTAssertEqual(service.lastReveicedSearchTerm, "", "lastReveicedSearchTerm")
         XCTAssertEqual(numberOfRows(tableView: sut.tableView, section: 0), 0, "numberOfRows")
     }
@@ -197,14 +179,12 @@ class ImageSearchViewControllerTests: XCTestCase {
         let viewModels = [ImageViewModel(image: nil, title: "dummay title")]
         let service = ServiceStub(fetchImagesFuncution: fetchImages(by: viewModels))
         let sut = makeSUT(service: service)
-        
         XCTAssertEqual(service.lastReveicedSearchTerm, "", "lastReveicedSearchTerm")
         
         sut.loadViewIfNeeded()
         sut.searchController.searchBar.text = "dummy search term"
         executeRunLoop()
         
-        XCTAssertEqual(service.fetchImagesTriggerCount, 2, "fetchImagesTriggerCount")
         XCTAssertEqual(service.lastReveicedSearchTerm, "dummy search term", "lastReveicedSearchTerm")
         let cell = sut.getCell(row: 0, section: 0)
         XCTAssertEqual(cell?.titleLabel.text, "dummay title", "title")
@@ -220,9 +200,8 @@ class ImageSearchViewControllerTests: XCTestCase {
         let sut = makeSUT(service: service)
 
         sut.loadViewIfNeeded()
+        sut.searchController.searchBar.text = "dummy search term"
         executeRunLoop()
-
-        XCTAssertEqual(numberOfRows(tableView: sut.tableView, section: 0), 3, "number of rows")
 
         let cell0 = sut.getCell(row: 0, section: 0)
         let cell1 = sut.getCell(row: 1, section: 0)
@@ -238,10 +217,11 @@ class ImageSearchViewControllerTests: XCTestCase {
         let sut = makeSUT(service: service)
 
         sut.loadViewIfNeeded()
+        sut.searchController.searchBar.text = "dummy search term"
 
         // Loading
         XCTAssertEqual(sut.view.subviews.filter({ $0 is LoadingView }).count, 1)
-
+        
         executeRunLoop()
 
         // End loading
@@ -304,30 +284,17 @@ private extension ImageSearchViewController {
     }
 }
 
-private class SearchTermPublisherSpy {
-    private(set) var searchTerms = [String]()
-    private var subscription: AnyCancellable?
-    
-    init(searchTerm: CurrentValueSubject<String, Never>) {
-        subscription = searchTerm.sink { [weak self] searchTerm in
-            self?.searchTerms.append(searchTerm)
-        }
-    }
-}
-
 typealias FetchImagesFuction = (() -> AnyPublisher<[ImageViewModel], Error>)
 
 private class ServiceStub: DataService {
     var fetchImagesFuncution: FetchImagesFuction
     private(set) var lastReveicedSearchTerm = ""
-    private(set) var fetchImagesTriggerCount = 0
     
     init(fetchImagesFuncution: @escaping FetchImagesFuction) {
         self.fetchImagesFuncution = fetchImagesFuncution
     }
     
     func fetchImages(searchTerm: String, page: Int) -> AnyPublisher<[ImageViewModel], Error> {
-        fetchImagesTriggerCount += 1
         lastReveicedSearchTerm = searchTerm
         return fetchImagesFuncution()
     }
