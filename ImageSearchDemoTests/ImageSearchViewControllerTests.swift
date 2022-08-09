@@ -17,18 +17,6 @@ struct ImageViewModel {
     let title: String
 }
 
-class LoadingView: UIView {
-    static let shared = LoadingView(frame: .zero)
-    
-    func add(to view: UIView) {
-        view.addSubview(self)
-    }
-    
-    func remove(from view: UIView) {
-        removeFromSuperview()
-    }
-}
-
 class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITableViewDataSource, UITableViewDelegate {
     
     let searchController = UISearchController()

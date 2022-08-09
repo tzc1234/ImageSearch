@@ -13,6 +13,7 @@
 		BE353593289FA7F000BB6B3E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BE353591289FA7F000BB6B3E /* LaunchScreen.storyboard */; };
 		BE3535A828A04A9B00BB6B3E /* ImageSearchViewControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3535A728A04A9B00BB6B3E /* ImageSearchViewControllerTests.swift */; };
 		BE37C84028A136FA00A40711 /* ImageTableViewCellTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE37C83F28A136FA00A40711 /* ImageTableViewCellTests.swift */; };
+		BE41A95F28A2579D000EB7DC /* LoadingViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE41A95E28A2579D000EB7DC /* LoadingViewTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +36,7 @@
 		BE35359E28A04A4F00BB6B3E /* ImageSearchDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageSearchDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE3535A728A04A9B00BB6B3E /* ImageSearchViewControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSearchViewControllerTests.swift; sourceTree = "<group>"; };
 		BE37C83F28A136FA00A40711 /* ImageTableViewCellTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageTableViewCellTests.swift; sourceTree = "<group>"; };
+		BE41A95E28A2579D000EB7DC /* LoadingViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingViewTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +92,7 @@
 			children = (
 				BE3535A728A04A9B00BB6B3E /* ImageSearchViewControllerTests.swift */,
 				BE37C83F28A136FA00A40711 /* ImageTableViewCellTests.swift */,
+				BE41A95E28A2579D000EB7DC /* LoadingViewTests.swift */,
 			);
 			path = ImageSearchDemoTests;
 			sourceTree = "<group>";
@@ -205,6 +208,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BE3535A828A04A9B00BB6B3E /* ImageSearchViewControllerTests.swift in Sources */,
+				BE41A95F28A2579D000EB7DC /* LoadingViewTests.swift in Sources */,
 				BE37C84028A136FA00A40711 /* ImageTableViewCellTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
