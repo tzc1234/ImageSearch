@@ -12,6 +12,7 @@ class LoadingView: UIView {
     
     let indicator: UIActivityIndicatorView = {
         let ind = UIActivityIndicatorView(style: .large)
+        ind.startAnimating()
         return ind
     }()
     
@@ -37,6 +38,12 @@ class LoadingViewTests: XCTestCase {
         XCTAssertNotNil(sut.indicator)
     }
 
+    func test_indicator_isAnimatingAfterInit() {
+        let sut = makeSUT()
+        
+        XCTAssertTrue(sut.indicator.isAnimating)
+    }
+    
 }
 
 // MARK: - Helpers
