@@ -8,25 +8,40 @@
 import UIKit
 
 class LoadingView: UIView {
-    static let shared = LoadingView()
-    
+
     let indicator: UIActivityIndicatorView = {
         let ind = UIActivityIndicatorView(style: .large)
-        ind.startAnimating()
+        ind.translatesAutoresizingMaskIntoConstraints = false
+        ind.color = .systemBlue
         return ind
     }()
     
     convenience init() {
         self.init(frame: .zero)
-        indicator.center = center
-        backgroundColor = .darkGray.withAlphaComponent(0.7)
+        translatesAutoresizingMaskIntoConstraints = false
+        addSubview(indicator)
     }
     
     func add(to view: UIView) {
         view.addSubview(self)
+        setConstraints(to: view)
+        indicator.startAnimating()
     }
     
     func remove(from view: UIView) {
+        indicator.stopAnimating()
         removeFromSuperview()
+    }
+    
+    private func setConstraints(to superview: UIView) {
+        NSLayoutConstraint.activate([
+            topAnchor.constraint(equalTo: superview.topAnchor),
+            leadingAnchor.constraint(equalTo: superview.leadingAnchor),
+            trailingAnchor.constraint(equalTo: superview.trailingAnchor),
+            bottomAnchor.constraint(equalTo: superview.bottomAnchor),
+            
+            indicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            indicator.centerYAnchor.constraint(equalTo: centerYAnchor)
+        ])
     }
 }

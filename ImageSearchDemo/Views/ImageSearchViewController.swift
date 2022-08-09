@@ -11,7 +11,7 @@ import Combine
 class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITableViewDataSource, UITableViewDelegate {
     
     let searchController = UISearchController()
-    
+    let loadingView = LoadingView()
     private(set) var tableView: UITableView = {
         let table = UITableView()
         table.register(ImageTableViewCell.self, forCellReuseIdentifier: ImageTableViewCell.identifier)
@@ -59,13 +59,13 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
     }
     
     private func fetchImages(searchTerm: String, page: Int = 1) {
-        LoadingView.shared.add(to: view)
+        loadingView.add(to: view)
         
         service.fetchImages(searchTerm: searchTerm, page: page)
             .receive(on: RunLoop.main)
             .sink { [weak self] completion in
                 guard let self = self else { return }
-                LoadingView.shared.remove(from: self.view)
+                self.loadingView.remove(from: self.view)
                 
                 switch completion {
                 case .finished:
@@ -86,7 +86,7 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return imageViewModels.count
+        imageViewModels.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

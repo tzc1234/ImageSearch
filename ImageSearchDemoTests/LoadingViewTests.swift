@@ -15,23 +15,18 @@ class LoadingViewTests: XCTestCase {
         
         XCTAssertNotNil(sut.indicator)
     }
-
-    func test_indicator_isAnimatingAfterInit() {
-        let sut = makeSUT()
-        
-        XCTAssertTrue(sut.indicator.isAnimating)
-    }
     
-    func test_addToView() {
+    func test_addToViewAndIndicatorIsAnimating() {
         let sut = makeSUT()
         let view = UIView()
         
         sut.add(to: view)
         
-        XCTAssertTrue(view.subviews.contains(sut))
+        XCTAssertTrue(view.subviews.contains(sut), "subviews")
+        XCTAssertTrue(sut.indicator.isAnimating, "indicator.isAnimating")
     }
     
-    func test_removeFromView() {
+    func test_removeFromViewAndIndicatorIsNotAnimating() {
         let sut = makeSUT()
         let view = UIView()
         
@@ -41,7 +36,8 @@ class LoadingViewTests: XCTestCase {
         
         sut.remove(from: view)
         
-        XCTAssertFalse(view.subviews.contains(sut))
+        XCTAssertFalse(view.subviews.contains(sut), "subviews")
+        XCTAssertFalse(sut.indicator.isAnimating, "indicator.isAnimating")
     }
 }
 
