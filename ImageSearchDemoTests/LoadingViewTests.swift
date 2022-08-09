@@ -8,7 +8,7 @@
 import XCTest
 
 class LoadingView: UIView {
-    static let shared = LoadingView(frame: .zero)
+    static let shared = LoadingView()
     
     let indicator: UIActivityIndicatorView = {
         let ind = UIActivityIndicatorView(style: .large)
@@ -44,6 +44,27 @@ class LoadingViewTests: XCTestCase {
         XCTAssertTrue(sut.indicator.isAnimating)
     }
     
+    func test_addToView() {
+        let sut = makeSUT()
+        let view = UIView()
+        
+        sut.add(to: view)
+        
+        XCTAssertTrue(view.subviews.contains(sut))
+    }
+    
+    func test_removeFromView() {
+        let sut = makeSUT()
+        let view = UIView()
+        
+        sut.add(to: view)
+        
+        XCTAssertTrue(view.subviews.contains(sut))
+        
+        sut.remove(from: view)
+        
+        XCTAssertFalse(view.subviews.contains(sut))
+    }
 }
 
 // MARK: - Helpers
