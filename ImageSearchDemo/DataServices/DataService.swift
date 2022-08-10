@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-protocol DataService: AnyObject {
+protocol DataService {
     func fetchImages(searchTerm: String, page: Int) -> AnyPublisher<[ImageViewModel], Error>
 }
 
