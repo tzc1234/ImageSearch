@@ -11,12 +11,13 @@ protocol EndPoint {
     var scheme: String { get }
     var baseURL: String { get }
     var path: String { get }
-    var queryItems: [URLQueryItem] { get }
+    var queryItems: [URLQueryItem]? { get }
     var method: String { get }
 }
 
 enum FlickrEndPoint: EndPoint {
     case searchPhotos(searchTerm: String, page: Int)
+    case photoData(photo: Photo)
     
     var scheme: String {
         switch self {
@@ -27,6 +28,8 @@ enum FlickrEndPoint: EndPoint {
     
     var baseURL: String {
         switch self {
+        case .photoData:
+            return "live.staticflickr.com"
         default:
             return "www.flickr.com"
         }
@@ -36,6 +39,8 @@ enum FlickrEndPoint: EndPoint {
         switch self {
         case .searchPhotos:
             return "/services/rest/"
+        case .photoData(let photo):
+            return "/\(photo.server)/\(photo.id)_\(photo.secret)_b.jpg"
         }
     }
     
@@ -46,29 +51,28 @@ enum FlickrEndPoint: EndPoint {
         }
     }
     
-    var queryItems: [URLQueryItem] {
-        var items: [URLQueryItem] = [
-            .init(name: "api_key", value: apiKey)
-        ]
-        
+    var queryItems: [URLQueryItem]? {
         switch self {
         case .searchPhotos(let searchTerm, let page):
-            items += [
+            return [
+                .init(name: "api_key", value: apiKey),
                 .init(name: "method", value: flickrMethod),
                 .init(name: "text", value: "\(searchTerm)"),
                 .init(name: "page", value: "\(page)"),
                 .init(name: "per_page", value: "20"),
                 .init(name: "format", value: format),
             ]
+        case .photoData:
+            return nil
         }
-        
-        return items
     }
     
     var flickrMethod: String {
         switch self {
         case .searchPhotos:
             return "flickr.photos.search"
+        case .photoData:
+            return ""
         }
     }
     
@@ -100,6 +104,7 @@ enum NetworkError: Error {
 
 protocol HttpClient {
     func request<T: Codable>(endPoint: EndPoint, completion: @escaping (Result<T, NetworkError>) -> Void)
+    func requestData(endPoint: EndPoint, completion: @escaping (Result<Data, NetworkError>) -> Void)
 }
 
 class FlickrAPI {
@@ -111,6 +116,10 @@ class FlickrAPI {
     
     func searchPhotos(endPoint: FlickrEndPoint, completion: @escaping (Result<SearchPhotos, NetworkError>) -> Void) {
         client.request(endPoint: endPoint, completion: completion)
+    }
+    
+    func getPhotoData(endPoint: FlickrEndPoint, completion: @escaping (Result<Data, NetworkError>) -> Void) {
+        client.requestData(endPoint: endPoint, completion: completion)
     }
 }
 
@@ -301,12 +310,23 @@ class FlickrAPITests: XCTestCase {
         XCTAssertEqual(photoArr[2].id, "id2", "photo 2")
     }
     
+    func test_getPhotoData_checkValidUrl() {
+        let photo = makePhoto(id: "id0")
+        let client = HttpClientSpy()
+        let sut = FlickrAPI(client: client)
+        
+        sut.getPhotoData(endPoint: .photoData(photo: photo), completion: { _ in })
+        let url = client.url
+        
+        XCTAssertEqual(url?.absoluteString, "https://live.staticflickr.com/server/id0_secret_b.jpg")
+    }
 }
+
 
 // MARK: Helpers
 extension FlickrAPITests {
     var searchPhotosEndPoint: FlickrEndPoint {
-        .searchPhotos(searchTerm: "aaa", page: 1)
+        return FlickrEndPoint.searchPhotos(searchTerm: "aaa", page: 1)
     }
     
     func makePhoto(id: String, owner: String = "owner", title: String = "title") -> Photo {
@@ -326,7 +346,20 @@ class HttpClientSpy: HttpClient {
         components.host = endPoint.baseURL
         components.path = endPoint.path
         components.queryItems = endPoint.queryItems
-        url = components.url
+        
+        self.url = components.url
+    }
+    
+    func requestData(endPoint: EndPoint, completion: @escaping (Result<Data, NetworkError>) -> Void) {
+        self.endPoint = endPoint
+        
+        var components = URLComponents()
+        components.scheme = endPoint.scheme
+        components.host = endPoint.baseURL
+        components.path = endPoint.path
+        components.queryItems = endPoint.queryItems
+        
+        self.url = components.url
     }
 }
 
@@ -344,17 +377,27 @@ class FailureHttpClient: HttpClient {
     func request<T>(endPoint: EndPoint, completion: @escaping (Result<T, NetworkError>) -> Void) {
         completion(.failure(networkErr))
     }
+    
+    func requestData(endPoint: EndPoint, completion: @escaping (Result<Data, NetworkError>) -> Void) {
+        completion(.failure(networkErr))
+    }
 }
 
 class SuccessHttpClient: HttpClient {
     private(set) var searchPhotos: SearchPhotos
+    private(set) var uiimage: UIImage
     
-    init(searchPhotos: SearchPhotos) {
+    init(searchPhotos: SearchPhotos, uiimage: UIImage = UIImage()) {
         self.searchPhotos = searchPhotos
+        self.uiimage = uiimage
     }
     
     func request<T>(endPoint: EndPoint, completion: @escaping (Result<T, NetworkError>) -> Void) {
         completion(.success(searchPhotos as! T))
+    }
+    
+    func requestData(endPoint: EndPoint, completion: @escaping (Result<Data, NetworkError>) -> Void) {
+        completion(.success(uiimage.pngData()!))
     }
 }
 
