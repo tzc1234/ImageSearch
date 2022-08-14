@@ -139,6 +139,11 @@ class FlickrAPITests: XCTestCase {
         sut.searchImages(endPoint: .searchImages(searchTerm: searchTerm, page: page), completion: { _ in })
         let ep = client.endPoint as! FlickrEndPoint
         
+        XCTAssertEqual(ep.scheme, "https", "scheme")
+        XCTAssertEqual(ep.path, "/services/rest/", "path")
+        XCTAssertEqual(ep.baseURL, "www.flickr.com", "baseURL")
+        XCTAssertEqual(ep.method, "get", "method")
+        
         let queryItems: [URLQueryItem] = [
             .init(name: "api_key", value: ep.apiKey),
             .init(name: "method", value: "flickr.photos.search"),
@@ -148,10 +153,6 @@ class FlickrAPITests: XCTestCase {
             .init(name: "format", value: "json"),
         ]
         
-        XCTAssertEqual(ep.scheme, "https", "scheme")
-        XCTAssertEqual(ep.path, "/services/rest/", "path")
-        XCTAssertEqual(ep.baseURL, "www.flickr.com", "baseURL")
-        XCTAssertEqual(ep.method, "get", "method")
         XCTAssertEqual(ep.queryItems, queryItems, "queryItems")
     }
 
@@ -174,14 +175,39 @@ class FlickrAPITests: XCTestCase {
         var networkErr: NetworkError?
         sut.searchImages(endPoint: searchImagesEndPoint) { result in
             switch result {
-            case .success:
-                break
             case .failure(let err):
                 networkErr = err
+            default:
+                break
             }
         }
         
         XCTAssertEqual(networkErr?.errorMessage, "Invalid URL of flickrMethod: flickr.photos.search.")
+    }
+    
+    func test_searchImages_completeWithEmptySearchedPhotos() {
+        let photos = Photos(page: 1, pages: 0, perpage: 20, total: 0, photo: [])
+        let searchPotos = SearchPhotos(photos: photos, stat: "ok")
+        
+        let client = SuccessHttpClient(searchPhotos: searchPotos)
+        let sut = FlickrAPI(client: client)
+        
+        var sp: SearchPhotos?
+        sut.searchImages(endPoint: searchImagesEndPoint) { result in
+            switch result {
+            case .success(let searchPhotos):
+                sp = searchPhotos
+            default:
+                break
+            }
+        }
+        
+        XCTAssertEqual(sp?.stat, "ok", "state")
+        XCTAssertEqual(sp?.photos.photo.count, 0, "photo count")
+        XCTAssertEqual(sp?.photos.page, 1, "page")
+        XCTAssertEqual(sp?.photos.pages, 0 , "pages")
+        XCTAssertEqual(sp?.photos.perpage, 20, "perpage")
+        XCTAssertEqual(sp?.photos.total, 0, "total")
     }
     
 }
@@ -220,3 +246,16 @@ class FailureHttpClient: HttpClient {
         completion(.failure(networkErr))
     }
 }
+
+class SuccessHttpClient: HttpClient {
+    private(set) var searchPhotos: SearchPhotos
+    
+    init(searchPhotos: SearchPhotos) {
+        self.searchPhotos = searchPhotos
+    }
+    
+    func request<T>(endPoint: EndPoint, completion: @escaping (Result<T, NetworkError>) -> Void) {
+        completion(.success(searchPhotos as! T))
+    }
+}
+
