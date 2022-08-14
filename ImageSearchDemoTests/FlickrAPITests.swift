@@ -233,8 +233,7 @@ class FlickrAPITests: XCTestCase {
     }
     
     func test_searchPhotos_completeWithOneSearchedPhotos() {
-        let photo = Photo(id: "id", owner: "owner", secret: "secret", server: "server", farm: 0, title: "title", ispublic: 0, isfriend: 0, isfamily: 0)
-        let photos = Photos(page: 1, pages: 1, perpage: 20, total: 1, photo: [photo])
+        let photos = Photos(page: 1, pages: 1, perpage: 20, total: 1, photo: [makePhoto(id: "id0")])
         let searchPotos = SearchPhotos(photos: photos, stat: "ok", code: nil, message: nil)
         let client = SuccessHttpClient(searchPhotos: searchPotos)
         let sut = FlickrAPI(client: client)
@@ -252,7 +251,7 @@ class FlickrAPITests: XCTestCase {
         let p = sp?.photos?.photo.first
         
         XCTAssertEqual(sp?.photos?.photo.count, 1, "photo count")
-        XCTAssertEqual(p?.id, "id", "id")
+        XCTAssertEqual(p?.id, "id0", "id")
         XCTAssertEqual(p?.owner, "owner", "owner")
         XCTAssertEqual(p?.secret, "secret", "secret")
         XCTAssertEqual(p?.server, "server", "server")
@@ -265,9 +264,9 @@ class FlickrAPITests: XCTestCase {
     
     func test_searchPhotos_completeWithThreeSearchPhotos() {
         let photos = Photos(page: 1, pages: 1, perpage: 20, total: 1, photo: [
-            .init(id: "id0", owner: "owner", secret: "secret", server: "server", farm: 0, title: "title", ispublic: 0, isfriend: 0, isfamily: 0),
-            .init(id: "id1", owner: "owner", secret: "secret", server: "server", farm: 0, title: "title", ispublic: 0, isfriend: 0, isfamily: 0),
-            .init(id: "id2", owner: "owner", secret: "secret", server: "server", farm: 0, title: "title", ispublic: 0, isfriend: 0, isfamily: 0)
+            makePhoto(id: "id0"),
+            makePhoto(id: "id1"),
+            makePhoto(id: "id2")
         ])
         let searchPotos = SearchPhotos(photos: photos, stat: "ok", code: nil, message: nil)
         let client = SuccessHttpClient(searchPhotos: searchPotos)
@@ -297,6 +296,10 @@ class FlickrAPITests: XCTestCase {
 extension FlickrAPITests {
     var searchPhotosEndPoint: FlickrEndPoint {
         .searchPhotos(searchTerm: "aaa", page: 1)
+    }
+    
+    func makePhoto(id: String, owner: String = "owner", title: String = "title") -> Photo {
+        Photo(id: id, owner: owner, secret: "secret", server: "server", farm: 0, title: title, ispublic: 0, isfriend: 0, isfamily: 0)
     }
 }
 
