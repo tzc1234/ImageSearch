@@ -39,6 +39,13 @@ enum FlickrEndPoint: EndPoint {
         }
     }
     
+    var method: String {
+        switch self {
+        default:
+            return "get"
+        }
+    }
+    
     var queryItems: [URLQueryItem] {
         var items: [URLQueryItem] = [
             .init(name: "api_key", value: apiKey)
@@ -47,7 +54,7 @@ enum FlickrEndPoint: EndPoint {
         switch self {
         case .searchImages(let searchTerm, let page):
             items += [
-                .init(name: "method", value: "flickr.photos.search"),
+                .init(name: "method", value: flickrMethod),
                 .init(name: "text", value: "\(searchTerm)"),
                 .init(name: "page", value: "\(page)"),
                 .init(name: "per_page", value: "20"),
@@ -58,10 +65,10 @@ enum FlickrEndPoint: EndPoint {
         return items
     }
     
-    var method: String {
+    var flickrMethod: String {
         switch self {
-        default:
-            return "get"
+        case .searchImages:
+            return "flickr.photos.search"
         }
     }
     
@@ -78,7 +85,14 @@ enum FlickrEndPoint: EndPoint {
 }
 
 enum NetworkError: Error {
-    case invalidURL
+    case invalidURL(flickrMethod: String)
+    
+    var errorMessage: String {
+        switch self {
+        case .invalidURL(let flickrMethod):
+            return "Invalid URL of flickrMethod: \(flickrMethod)."
+        }
+    }
 }
 
 protocol HttpClient {
@@ -152,8 +166,9 @@ class FlickrAPITests: XCTestCase {
         XCTAssertEqual(url?.absoluteString, "https://www.flickr.com/services/rest/?api_key=\(ep.apiKey)&method=flickr.photos.search&text=aaa&page=1&per_page=20&format=json")
     }
     
-    func test_searchImages_handNetworkError() {
-        let client = FailureHttpClient(networkErr: .invalidURL)
+    func test_searchImages_handleInvalidURL() {
+        let invalidUrlErr = NetworkError.invalidURL(flickrMethod: "flickr.photos.search")
+        let client = FailureHttpClient(networkErr: invalidUrlErr)
         let sut = FlickrAPI(client: client)
         
         var networkErr: NetworkError?
@@ -166,7 +181,7 @@ class FlickrAPITests: XCTestCase {
             }
         }
         
-        XCTAssertEqual(networkErr, NetworkError.invalidURL)
+        XCTAssertEqual(networkErr?.errorMessage, "Invalid URL of flickrMethod: flickr.photos.search.")
     }
     
 }
