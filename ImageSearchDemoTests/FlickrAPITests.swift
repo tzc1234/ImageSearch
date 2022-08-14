@@ -263,6 +263,34 @@ class FlickrAPITests: XCTestCase {
         XCTAssertEqual(p?.isfamily, 0, "isfamily")
     }
     
+    func test_searchPhotos_completeWithThreeSearchPhotos() {
+        let photos = Photos(page: 1, pages: 1, perpage: 20, total: 1, photo: [
+            .init(id: "id0", owner: "owner", secret: "secret", server: "server", farm: 0, title: "title", ispublic: 0, isfriend: 0, isfamily: 0),
+            .init(id: "id1", owner: "owner", secret: "secret", server: "server", farm: 0, title: "title", ispublic: 0, isfriend: 0, isfamily: 0),
+            .init(id: "id2", owner: "owner", secret: "secret", server: "server", farm: 0, title: "title", ispublic: 0, isfriend: 0, isfamily: 0)
+        ])
+        let searchPotos = SearchPhotos(photos: photos, stat: "ok", code: nil, message: nil)
+        let client = SuccessHttpClient(searchPhotos: searchPotos)
+        let sut = FlickrAPI(client: client)
+        
+        var sp: SearchPhotos?
+        sut.searchPhotos(endPoint: searchPhotosEndPoint) { result in
+            switch result {
+            case .success(let searchPhotos):
+                sp = searchPhotos
+            default:
+                break
+            }
+        }
+        
+        let photoArr = (sp?.photos?.photo)!
+        
+        XCTAssertEqual(photoArr.count, 3, "photo count")
+        XCTAssertEqual(photoArr[0].id, "id0", "photo 0")
+        XCTAssertEqual(photoArr[1].id, "id1", "photo 1")
+        XCTAssertEqual(photoArr[2].id, "id2", "photo 2")
+    }
+    
 }
 
 // MARK: Helpers
