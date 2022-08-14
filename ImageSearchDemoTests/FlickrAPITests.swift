@@ -123,19 +123,19 @@ class FlickrAPI {
     }
 }
 
-struct SearchPhotos: Codable {
+struct SearchPhotos: Codable, Equatable {
     let photos: Photos?
     let stat: String
     let code: Int?
     let message: String?
 }
 
-struct Photos: Codable {
+struct Photos: Codable, Equatable {
     let page, pages, perpage, total: Int
     let photo: [Photo]
 }
 
-struct Photo: Codable {
+struct Photo: Codable, Equatable {
     let id, owner, secret, server: String
     let farm: Int
     let title: String
@@ -233,12 +233,7 @@ class FlickrAPITests: XCTestCase {
             }
         }
         
-        XCTAssertEqual(sp?.stat, "ok", "state")
-        XCTAssertEqual(sp?.photos?.photo.count, 0, "photo count")
-        XCTAssertEqual(sp?.photos?.page, 1, "page")
-        XCTAssertEqual(sp?.photos?.pages, 0 , "pages")
-        XCTAssertEqual(sp?.photos?.perpage, 20, "perpage")
-        XCTAssertEqual(sp?.photos?.total, 0, "total")
+        XCTAssertEqual(sp, searchPotos)
     }
     
     func test_searchPhotos_completeWithOneSearchedPhotos() {
@@ -257,24 +252,7 @@ class FlickrAPITests: XCTestCase {
             }
         }
         
-        let p = sp?.photos?.photo.first
-        
-        XCTAssertEqual(sp?.stat, "ok", "state")
-        XCTAssertEqual(sp?.photos?.photo.count, 1, "photo count")
-        XCTAssertEqual(sp?.photos?.page, 1, "page")
-        XCTAssertEqual(sp?.photos?.pages, 1 , "pages")
-        XCTAssertEqual(sp?.photos?.perpage, 20, "perpage")
-        XCTAssertEqual(sp?.photos?.total, 1, "total")
-        
-        XCTAssertEqual(p?.id, "id0", "id")
-        XCTAssertEqual(p?.owner, "owner", "owner")
-        XCTAssertEqual(p?.secret, "secret", "secret")
-        XCTAssertEqual(p?.server, "server", "server")
-        XCTAssertEqual(p?.farm, 0, "farm")
-        XCTAssertEqual(p?.title, "title", "title")
-        XCTAssertEqual(p?.ispublic, 0, "ispublic")
-        XCTAssertEqual(p?.isfriend, 0, "isfriend")
-        XCTAssertEqual(p?.isfamily, 0, "isfamily")
+        XCTAssertEqual(sp, searchPotos)
     }
     
     func test_searchPhotos_completeWithThreeSearchPhotos() {
@@ -297,17 +275,7 @@ class FlickrAPITests: XCTestCase {
             }
         }
         
-        let photoArr = (sp?.photos?.photo)!
-        
-        XCTAssertEqual(sp?.stat, "ok", "state")
-        XCTAssertEqual(sp?.photos?.photo.count, 3, "photo count")
-        XCTAssertEqual(sp?.photos?.page, 1, "page")
-        XCTAssertEqual(sp?.photos?.pages, 1 , "pages")
-        XCTAssertEqual(sp?.photos?.perpage, 20, "perpage")
-        XCTAssertEqual(sp?.photos?.total, 3, "total")
-        XCTAssertEqual(photoArr[0].id, "id0", "photo 0")
-        XCTAssertEqual(photoArr[1].id, "id1", "photo 1")
-        XCTAssertEqual(photoArr[2].id, "id2", "photo 2")
+        XCTAssertEqual(sp, searchPotos)
     }
     
     func test_getPhotoData_checkValidUrl() {
