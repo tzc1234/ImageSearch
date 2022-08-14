@@ -35,7 +35,7 @@ enum FlickrEndPoint: EndPoint {
     var path: String {
         switch self {
         case .searchImages:
-            return "/services/rest/?method=flickr.photos.search"
+            return "/services/rest/"
         }
     }
     
@@ -47,6 +47,7 @@ enum FlickrEndPoint: EndPoint {
         switch self {
         case .searchImages(let searchTerm, let page):
             items += [
+                .init(name: "method", value: "flickr.photos.search"),
                 .init(name: "text", value: "\(searchTerm)"),
                 .init(name: "page", value: "\(page)"),
                 .init(name: "per_page", value: "20"),
@@ -86,9 +87,19 @@ protocol HttpClient {
 
 class FailureHttpClientSpy: HttpClient {
     private(set) var endPoint: EndPoint?
+    private(set) var url: URL?
     
     func request<T>(endPoint: EndPoint, type: T.Type, completion: @escaping (Result<T, NetworkError>) -> Void) {
         self.endPoint = endPoint
+        
+        var components = URLComponents()
+        components.scheme = endPoint.scheme
+        components.host = endPoint.baseURL
+        components.path = endPoint.path
+        components.queryItems = endPoint.queryItems
+        
+        url = components.url
+        
         completion(.failure(NetworkError.invalidURL))
     }
 }
@@ -116,9 +127,9 @@ class FlickrAPITests: XCTestCase {
         sut.searchImages(endPoint: FlickrEndPoint.searchImages(searchTerm: searchTerm, page: page))
         let ep = client.endPoint as! FlickrEndPoint
         
-        
         let queryItems: [URLQueryItem] = [
             .init(name: "api_key", value: ep.apiKey),
+            .init(name: "method", value: "flickr.photos.search"),
             .init(name: "text", value: "\(searchTerm)"),
             .init(name: "page", value: "\(page)"),
             .init(name: "per_page", value: "20"),
@@ -126,10 +137,22 @@ class FlickrAPITests: XCTestCase {
         ]
         
         XCTAssertEqual(ep.scheme, "https", "scheme")
-        XCTAssertEqual(ep.path, "/services/rest/?method=flickr.photos.search", "path")
+        XCTAssertEqual(ep.path, "/services/rest/", "path")
         XCTAssertEqual(ep.baseURL, "www.flickr.com", "baseURL")
         XCTAssertEqual(ep.method, "get", "method")
         XCTAssertEqual(ep.queryItems, queryItems, "queryItems")
     }
 
+    func test_endPoint_composeToCorrectUrl() {
+        let client = FailureHttpClientSpy()
+        let sut = FlickrAPI(client: client)
+        let searchTerm = "aaa"
+        let page = 1
+        
+        sut.searchImages(endPoint: FlickrEndPoint.searchImages(searchTerm: searchTerm, page: page))
+        let ep = client.endPoint as! FlickrEndPoint
+        let url = client.url
+        
+        XCTAssertEqual(url?.absoluteString, "https://www.flickr.com/services/rest/?api_key=\(ep.apiKey)&method=flickr.photos.search&text=aaa&page=1&per_page=20&format=json")
+    }
 }
