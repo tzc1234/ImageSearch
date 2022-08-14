@@ -218,8 +218,8 @@ extension FlickrAPITests {
         return FlickrEndPoint.searchPhotos(searchTerm: "aaa", page: 1)
     }
     
-    func makePhoto(id: String, owner: String = "owner", title: String = "title") -> Photo {
-        Photo(id: id, owner: owner, secret: "secret", server: "server", farm: 0, title: title, ispublic: 0, isfriend: 0, isfamily: 0)
+    func makePhoto(id: String) -> Photo {
+        Photo(id: id, owner: "owner", secret: "secret", server: "server", farm: 0, title: "title", ispublic: 0, isfriend: 0, isfamily: 0)
     }
 }
 
