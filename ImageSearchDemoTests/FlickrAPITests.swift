@@ -250,7 +250,13 @@ class FlickrAPITests: XCTestCase {
         
         let p = sp?.photos?.photo.first
         
+        XCTAssertEqual(sp?.stat, "ok", "state")
         XCTAssertEqual(sp?.photos?.photo.count, 1, "photo count")
+        XCTAssertEqual(sp?.photos?.page, 1, "page")
+        XCTAssertEqual(sp?.photos?.pages, 1 , "pages")
+        XCTAssertEqual(sp?.photos?.perpage, 20, "perpage")
+        XCTAssertEqual(sp?.photos?.total, 1, "total")
+        
         XCTAssertEqual(p?.id, "id0", "id")
         XCTAssertEqual(p?.owner, "owner", "owner")
         XCTAssertEqual(p?.secret, "secret", "secret")
@@ -263,7 +269,7 @@ class FlickrAPITests: XCTestCase {
     }
     
     func test_searchPhotos_completeWithThreeSearchPhotos() {
-        let photos = Photos(page: 1, pages: 1, perpage: 20, total: 1, photo: [
+        let photos = Photos(page: 1, pages: 1, perpage: 20, total: 3, photo: [
             makePhoto(id: "id0"),
             makePhoto(id: "id1"),
             makePhoto(id: "id2")
@@ -284,7 +290,12 @@ class FlickrAPITests: XCTestCase {
         
         let photoArr = (sp?.photos?.photo)!
         
-        XCTAssertEqual(photoArr.count, 3, "photo count")
+        XCTAssertEqual(sp?.stat, "ok", "state")
+        XCTAssertEqual(sp?.photos?.photo.count, 3, "photo count")
+        XCTAssertEqual(sp?.photos?.page, 1, "page")
+        XCTAssertEqual(sp?.photos?.pages, 1 , "pages")
+        XCTAssertEqual(sp?.photos?.perpage, 20, "perpage")
+        XCTAssertEqual(sp?.photos?.total, 3, "total")
         XCTAssertEqual(photoArr[0].id, "id0", "photo 0")
         XCTAssertEqual(photoArr[1].id, "id1", "photo 1")
         XCTAssertEqual(photoArr[2].id, "id2", "photo 2")
