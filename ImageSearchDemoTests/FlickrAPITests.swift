@@ -82,26 +82,7 @@ enum NetworkError: Error {
 }
 
 protocol HttpClient {
-    func request<T: Codable>(endPoint: EndPoint, type: T.Type, completion: @escaping (Result<T, NetworkError>) -> Void)
-}
-
-class FailureHttpClientSpy: HttpClient {
-    private(set) var endPoint: EndPoint?
-    private(set) var url: URL?
-    
-    func request<T>(endPoint: EndPoint, type: T.Type, completion: @escaping (Result<T, NetworkError>) -> Void) {
-        self.endPoint = endPoint
-        
-        var components = URLComponents()
-        components.scheme = endPoint.scheme
-        components.host = endPoint.baseURL
-        components.path = endPoint.path
-        components.queryItems = endPoint.queryItems
-        
-        url = components.url
-        
-        completion(.failure(NetworkError.invalidURL))
-    }
+    func request<T: Codable>(endPoint: EndPoint, completion: @escaping (Result<T, NetworkError>) -> Void)
 }
 
 class FlickrAPI {
@@ -111,20 +92,37 @@ class FlickrAPI {
         self.client = client
     }
     
-    func searchImages(endPoint: EndPoint) {
-        client.request(endPoint: endPoint, type: String.self, completion: {_ in})
+    func searchImages(endPoint: FlickrEndPoint, completion: @escaping (Result<SearchPhotos, NetworkError>) -> Void) {
+        client.request(endPoint: endPoint, completion: completion)
     }
+}
+
+struct SearchPhotos: Codable {
+    let photos: Photos
+    let stat: String
+}
+
+struct Photos: Codable {
+    let page, pages, perpage, total: Int
+    let photo: [Photo]
+}
+
+struct Photo: Codable {
+    let id, owner, secret, server: String
+    let farm: Int
+    let title: String
+    let ispublic, isfriend, isfamily: Int
 }
 
 class FlickrAPITests: XCTestCase {
 
     func test_endPoint_isCorrect() {
-        let client = FailureHttpClientSpy()
+        let client = HttpClientSpy()
         let sut = FlickrAPI(client: client)
         let searchTerm = "aaa"
         let page = 1
         
-        sut.searchImages(endPoint: FlickrEndPoint.searchImages(searchTerm: searchTerm, page: page))
+        sut.searchImages(endPoint: .searchImages(searchTerm: searchTerm, page: page), completion: { _ in })
         let ep = client.endPoint as! FlickrEndPoint
         
         let queryItems: [URLQueryItem] = [
@@ -144,15 +142,61 @@ class FlickrAPITests: XCTestCase {
     }
 
     func test_endPoint_composeToCorrectUrl() {
-        let client = FailureHttpClientSpy()
+        let client = HttpClientSpy()
         let sut = FlickrAPI(client: client)
         let searchTerm = "aaa"
         let page = 1
         
-        sut.searchImages(endPoint: FlickrEndPoint.searchImages(searchTerm: searchTerm, page: page))
+        sut.searchImages(endPoint: .searchImages(searchTerm: searchTerm, page: page), completion: { _ in })
         let ep = client.endPoint as! FlickrEndPoint
         let url = client.url
         
         XCTAssertEqual(url?.absoluteString, "https://www.flickr.com/services/rest/?api_key=\(ep.apiKey)&method=flickr.photos.search&text=aaa&page=1&per_page=20&format=json")
+    }
+    
+    func test_searchImages_handNetworkError() {
+        let client = FailureHttpClient(networkErr: .invalidURL)
+        let sut = FlickrAPI(client: client)
+        
+        var networkErr: NetworkError?
+        sut.searchImages(endPoint: .searchImages(searchTerm: "aaa", page: 1)) { result in
+            switch result {
+            case .success:
+                break
+            case .failure(let err):
+                networkErr = err
+            }
+        }
+        
+        XCTAssertEqual(networkErr, NetworkError.invalidURL)
+    }
+    
+}
+
+class HttpClientSpy: HttpClient {
+    private(set) var endPoint: EndPoint?
+    private(set) var url: URL?
+    
+    func request<T>(endPoint: EndPoint, completion: @escaping (Result<T, NetworkError>) -> Void) {
+        self.endPoint = endPoint
+        
+        var components = URLComponents()
+        components.scheme = endPoint.scheme
+        components.host = endPoint.baseURL
+        components.path = endPoint.path
+        components.queryItems = endPoint.queryItems
+        url = components.url
+    }
+}
+
+class FailureHttpClient: HttpClient {
+    private(set) var networkErr: NetworkError
+    
+    init(networkErr: NetworkError) {
+        self.networkErr = networkErr
+    }
+    
+    func request<T>(endPoint: EndPoint, completion: @escaping (Result<T, NetworkError>) -> Void) {
+        completion(.failure(networkErr))
     }
 }
