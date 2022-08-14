@@ -308,6 +308,25 @@ class FlickrAPITests: XCTestCase {
         XCTAssertEqual(networkError?.errorMessage, error.errorMessage)
     }
     
+    func test_getPhotoData_completeWithData() {
+        let imageData = (UIImage(systemName: "photo")?.pngData())!
+        let client = SuccessHttpClient(imageData: imageData)
+        let sut = FlickrAPI(client: client)
+        let photo = makePhoto(id: "id0")
+        
+        var photoData: Data?
+        sut.getPhotoData(endPoint: .photoData(photo: photo)) { result in
+            switch result {
+            case .success(let data):
+                photoData = data
+            default:
+                break
+            }
+        }
+        
+        XCTAssertEqual(photoData, imageData)
+    }
+    
 }
 
 
@@ -372,12 +391,12 @@ class FailureHttpClient: HttpClient {
 }
 
 class SuccessHttpClient: HttpClient {
-    private(set) var searchPhotos: SearchPhotos
-    private(set) var uiimage: UIImage
+    private(set) var searchPhotos: SearchPhotos?
+    private(set) var imageData: Data?
     
-    init(searchPhotos: SearchPhotos, uiimage: UIImage = UIImage()) {
+    init(searchPhotos: SearchPhotos? = nil, imageData: Data? = nil) {
         self.searchPhotos = searchPhotos
-        self.uiimage = uiimage
+        self.imageData = imageData
     }
     
     func request<T>(endPoint: EndPoint, completion: @escaping (Result<T, NetworkError>) -> Void) {
@@ -385,7 +404,7 @@ class SuccessHttpClient: HttpClient {
     }
     
     func requestData(endPoint: EndPoint, completion: @escaping (Result<Data, NetworkError>) -> Void) {
-        completion(.success(uiimage.pngData()!))
+        completion(.success(imageData!))
     }
 }
 
