@@ -150,12 +150,13 @@ class FlickrAPITests: XCTestCase {
         let sut = FlickrAPI(client: client)
         
         sut.getPhotoData(endPoint: .photoData(photo: photo), completion: { _ in })
-        let ep = client.endPoint!
+        let ep = client.endPoint as! FlickrEndPoint
         
         XCTAssertEqual(ep.scheme, "https", "scheme")
         XCTAssertEqual(ep.path, "/server/id0_secret_b.jpg", "path")
         XCTAssertEqual(ep.baseURL, "live.staticflickr.com", "baseURL")
         XCTAssertEqual(ep.method, "get", "method")
+        XCTAssertTrue(ep.flickrMethod.isEmpty, "flickrMethod")
         XCTAssertNil(ep.queryItems, "queryItems")
     }
     
