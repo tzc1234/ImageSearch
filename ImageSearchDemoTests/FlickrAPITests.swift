@@ -229,26 +229,21 @@ class HttpClientSpy: HttpClient {
     
     func request<T>(endPoint: EndPoint, completion: @escaping (Result<T, NetworkError>) -> Void) {
         self.endPoint = endPoint
-        
-        var components = URLComponents()
-        components.scheme = endPoint.scheme
-        components.host = endPoint.baseURL
-        components.path = endPoint.path
-        components.queryItems = endPoint.queryItems
-        
-        self.url = components.url
+        self.url = getURL(by: endPoint)
     }
     
     func requestData(endPoint: EndPoint, completion: @escaping (Result<Data, NetworkError>) -> Void) {
         self.endPoint = endPoint
-        
+        self.url = getURL(by: endPoint)
+    }
+    
+    private func getURL(by endPoint: EndPoint) -> URL? {
         var components = URLComponents()
         components.scheme = endPoint.scheme
         components.host = endPoint.baseURL
         components.path = endPoint.path
         components.queryItems = endPoint.queryItems
-        
-        self.url = components.url
+        return components.url
     }
 }
 
