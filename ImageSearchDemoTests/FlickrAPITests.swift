@@ -144,7 +144,7 @@ struct Photo: Codable, Equatable {
 
 class FlickrAPITests: XCTestCase {
 
-    func test_endPoint_isCorrect() {
+    func test_searchPhotosEndPoint_isCorrect() {
         let client = HttpClientSpy()
         let sut = FlickrAPI(client: client)
         let searchTerm = "aaa"
@@ -170,7 +170,7 @@ class FlickrAPITests: XCTestCase {
         XCTAssertEqual(ep.queryItems, queryItems, "queryItems")
     }
 
-    func test_endPoint_composeToCorrectUrl() {
+    func test_searchPhotosEndPoint_composeToValidURL() {
         let client = HttpClientSpy()
         let sut = FlickrAPI(client: client)
         
@@ -278,7 +278,22 @@ class FlickrAPITests: XCTestCase {
         XCTAssertEqual(sp, searchPotos)
     }
     
-    func test_getPhotoData_checkValidUrl() {
+    func test_photoDataEndPoint_isCorrect() {
+        let photo = makePhoto(id: "id0")
+        let client = HttpClientSpy()
+        let sut = FlickrAPI(client: client)
+        
+        sut.getPhotoData(endPoint: .photoData(photo: photo), completion: { _ in })
+        let ep = client.endPoint!
+        
+        XCTAssertEqual(ep.scheme, "https", "scheme")
+        XCTAssertEqual(ep.path, "/server/id0_secret_b.jpg", "path")
+        XCTAssertEqual(ep.baseURL, "live.staticflickr.com", "baseURL")
+        XCTAssertEqual(ep.method, "get", "method")
+        XCTAssertNil(ep.queryItems, "queryItems")
+    }
+    
+    func test_photoDataEndPoint_composeToValidURL() {
         let photo = makePhoto(id: "id0")
         let client = HttpClientSpy()
         let sut = FlickrAPI(client: client)
