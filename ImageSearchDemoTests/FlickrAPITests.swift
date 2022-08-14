@@ -144,10 +144,8 @@ class FlickrAPITests: XCTestCase {
     func test_endPoint_composeToCorrectUrl() {
         let client = HttpClientSpy()
         let sut = FlickrAPI(client: client)
-        let searchTerm = "aaa"
-        let page = 1
         
-        sut.searchImages(endPoint: .searchImages(searchTerm: searchTerm, page: page), completion: { _ in })
+        sut.searchImages(endPoint: searchImagesEndPoint, completion: { _ in })
         let ep = client.endPoint as! FlickrEndPoint
         let url = client.url
         
@@ -159,7 +157,7 @@ class FlickrAPITests: XCTestCase {
         let sut = FlickrAPI(client: client)
         
         var networkErr: NetworkError?
-        sut.searchImages(endPoint: .searchImages(searchTerm: "aaa", page: 1)) { result in
+        sut.searchImages(endPoint: searchImagesEndPoint) { result in
             switch result {
             case .success:
                 break
@@ -171,6 +169,13 @@ class FlickrAPITests: XCTestCase {
         XCTAssertEqual(networkErr, NetworkError.invalidURL)
     }
     
+}
+
+// MARK: Helpers
+extension FlickrAPITests {
+    var searchImagesEndPoint: FlickrEndPoint {
+        .searchImages(searchTerm: "aaa", page: 1)
+    }
 }
 
 class HttpClientSpy: HttpClient {
