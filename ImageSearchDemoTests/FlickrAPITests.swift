@@ -49,7 +49,7 @@ class FlickrAPITests: XCTestCase {
     
     func test_searchPhotos_handleInvalidURL() {
         let invalidUrlErr = NetworkError.invalidURL
-        let client = FailureHttpClient(networkErr: invalidUrlErr)
+        let client = FailureHttpClientStub(networkErr: invalidUrlErr)
         let sut = FlickrAPI(client: client)
         
         var networkErr: NetworkError?
@@ -67,7 +67,7 @@ class FlickrAPITests: XCTestCase {
     
     func test_searchPhotos_completeWithFlickrError() {
         let searchPotos = SearchPhotos(photos: nil, stat: "fail", code: 100, message: "Invalid API Key (Key has invalid format)")
-        let client = FailureHttpClient(flickrErrorSearchPhotos: searchPotos)
+        let client = FailureHttpClientStub(flickrErrorSearchPhotos: searchPotos)
         let sut = FlickrAPI(client: client)
         
         var networkErr: NetworkError?
@@ -86,7 +86,7 @@ class FlickrAPITests: XCTestCase {
     func test_searchPhotos_completeWithEmptySearchedPhotos() {
         let photos = Photos(page: 1, pages: 0, perpage: 20, total: 0, photo: [])
         let searchPotos = SearchPhotos(photos: photos, stat: "ok", code: nil, message: nil)
-        let client = SuccessHttpClient(searchPhotos: searchPotos)
+        let client = SuccessHttpClientStub(searchPhotos: searchPotos)
         let sut = FlickrAPI(client: client)
         
         var sp: SearchPhotos?
@@ -105,7 +105,7 @@ class FlickrAPITests: XCTestCase {
     func test_searchPhotos_completeWithOneSearchedPhotos() {
         let photos = Photos(page: 1, pages: 1, perpage: 20, total: 1, photo: [makePhoto(id: "id0")])
         let searchPotos = SearchPhotos(photos: photos, stat: "ok", code: nil, message: nil)
-        let client = SuccessHttpClient(searchPhotos: searchPotos)
+        let client = SuccessHttpClientStub(searchPhotos: searchPotos)
         let sut = FlickrAPI(client: client)
         
         var sp: SearchPhotos?
@@ -128,7 +128,7 @@ class FlickrAPITests: XCTestCase {
             makePhoto(id: "id2")
         ])
         let searchPotos = SearchPhotos(photos: photos, stat: "ok", code: nil, message: nil)
-        let client = SuccessHttpClient(searchPhotos: searchPotos)
+        let client = SuccessHttpClientStub(searchPhotos: searchPotos)
         let sut = FlickrAPI(client: client)
         
         var sp: SearchPhotos?
@@ -174,7 +174,7 @@ class FlickrAPITests: XCTestCase {
     func test_getPhotoData_completeWithInvalidUrlError() {
         let photo = makePhoto(id: "id0")
         let error = NetworkError.invalidURL
-        let client = FailureHttpClient(networkErr: error)
+        let client = FailureHttpClientStub(networkErr: error)
         let sut = FlickrAPI(client: client)
         
         var networkError: NetworkError?
@@ -192,7 +192,7 @@ class FlickrAPITests: XCTestCase {
     
     func test_getPhotoData_completeWithData() {
         let imageData = (UIImage(systemName: "photo")?.pngData())!
-        let client = SuccessHttpClient(imageData: imageData)
+        let client = SuccessHttpClientStub(imageData: imageData)
         let sut = FlickrAPI(client: client)
         let photo = makePhoto(id: "id0")
         
@@ -211,8 +211,7 @@ class FlickrAPITests: XCTestCase {
     
 }
 
-
-// MARK: Helpers
+// MARK: - Helpers
 extension FlickrAPITests {
     var searchPhotosEndPoint: FlickrEndPoint {
         return FlickrEndPoint.searchPhotos(searchTerm: "aaa", page: 1)
@@ -247,7 +246,7 @@ class HttpClientSpy: HttpClient {
     }
 }
 
-class FailureHttpClient: HttpClient {
+class FailureHttpClientStub: HttpClient {
     private(set) var networkErr: NetworkError
     
     init(networkErr: NetworkError) {
@@ -267,7 +266,7 @@ class FailureHttpClient: HttpClient {
     }
 }
 
-class SuccessHttpClient: HttpClient {
+class SuccessHttpClientStub: HttpClient {
     private(set) var searchPhotos: SearchPhotos?
     private(set) var imageData: Data?
     
