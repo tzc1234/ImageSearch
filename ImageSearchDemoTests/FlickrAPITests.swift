@@ -145,11 +145,10 @@ class FlickrAPITests: XCTestCase {
     }
     
     func test_photoDataEndPoint_isCorrect() {
-        let photo = makePhoto(id: "id0")
         let client = HttpClientSpy()
         let sut = FlickrAPI(client: client)
         
-        sut.getPhotoData(endPoint: .photoData(photo: photo), completion: { _ in })
+        sut.getPhotoData(endPoint: photoDataEndPoint, completion: { _ in })
         let ep = client.endPoint as! FlickrEndPoint
         
         XCTAssertEqual(ep.scheme, "https", "scheme")
@@ -161,24 +160,22 @@ class FlickrAPITests: XCTestCase {
     }
     
     func test_photoDataEndPoint_composeToValidURL() {
-        let photo = makePhoto(id: "id0")
         let client = HttpClientSpy()
         let sut = FlickrAPI(client: client)
         
-        sut.getPhotoData(endPoint: .photoData(photo: photo), completion: { _ in })
+        sut.getPhotoData(endPoint: photoDataEndPoint, completion: { _ in })
         let url = client.url
         
         XCTAssertEqual(url?.absoluteString, "https://live.staticflickr.com/server/id0_secret_b.jpg")
     }
     
     func test_getPhotoData_completeWithInvalidUrlError() {
-        let photo = makePhoto(id: "id0")
         let error = NetworkError.invalidURL
         let client = FailureHttpClientStub(networkErr: error)
         let sut = FlickrAPI(client: client)
         
         var networkError: NetworkError?
-        sut.getPhotoData(endPoint: .photoData(photo: photo)) { result in
+        sut.getPhotoData(endPoint: photoDataEndPoint) { result in
             switch result {
             case .failure(let error):
                 networkError = error
@@ -194,10 +191,9 @@ class FlickrAPITests: XCTestCase {
         let imageData = (UIImage(systemName: "photo")?.pngData())!
         let client = SuccessHttpClientStub(imageData: imageData)
         let sut = FlickrAPI(client: client)
-        let photo = makePhoto(id: "id0")
         
         var photoData: Data?
-        sut.getPhotoData(endPoint: .photoData(photo: photo)) { result in
+        sut.getPhotoData(endPoint: photoDataEndPoint) { result in
             switch result {
             case .success(let data):
                 photoData = data
@@ -214,7 +210,11 @@ class FlickrAPITests: XCTestCase {
 // MARK: - Helpers
 extension FlickrAPITests {
     var searchPhotosEndPoint: FlickrEndPoint {
-        return FlickrEndPoint.searchPhotos(searchTerm: "aaa", page: 1)
+        .searchPhotos(searchTerm: "aaa", page: 1)
+    }
+    
+    var photoDataEndPoint: FlickrEndPoint {
+        .photoData(photo: makePhoto(id: "id0"))
     }
     
     func makePhoto(id: String) -> Photo {
