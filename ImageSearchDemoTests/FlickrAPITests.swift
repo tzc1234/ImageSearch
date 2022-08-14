@@ -16,7 +16,7 @@ protocol EndPoint {
 }
 
 enum FlickrEndPoint: EndPoint {
-    case searchImages(searchTerm: String, page: Int)
+    case searchPhotos(searchTerm: String, page: Int)
     
     var scheme: String {
         switch self {
@@ -34,7 +34,7 @@ enum FlickrEndPoint: EndPoint {
     
     var path: String {
         switch self {
-        case .searchImages:
+        case .searchPhotos:
             return "/services/rest/"
         }
     }
@@ -52,7 +52,7 @@ enum FlickrEndPoint: EndPoint {
         ]
         
         switch self {
-        case .searchImages(let searchTerm, let page):
+        case .searchPhotos(let searchTerm, let page):
             items += [
                 .init(name: "method", value: flickrMethod),
                 .init(name: "text", value: "\(searchTerm)"),
@@ -67,7 +67,7 @@ enum FlickrEndPoint: EndPoint {
     
     var flickrMethod: String {
         switch self {
-        case .searchImages:
+        case .searchPhotos:
             return "flickr.photos.search"
         }
     }
@@ -109,7 +109,7 @@ class FlickrAPI {
         self.client = client
     }
     
-    func searchImages(endPoint: FlickrEndPoint, completion: @escaping (Result<SearchPhotos, NetworkError>) -> Void) {
+    func searchPhotos(endPoint: FlickrEndPoint, completion: @escaping (Result<SearchPhotos, NetworkError>) -> Void) {
         client.request(endPoint: endPoint, completion: completion)
     }
 }
@@ -141,7 +141,7 @@ class FlickrAPITests: XCTestCase {
         let searchTerm = "aaa"
         let page = 1
         
-        sut.searchImages(endPoint: .searchImages(searchTerm: searchTerm, page: page), completion: { _ in })
+        sut.searchPhotos(endPoint: .searchPhotos(searchTerm: searchTerm, page: page), completion: { _ in })
         let ep = client.endPoint as! FlickrEndPoint
         
         XCTAssertEqual(ep.scheme, "https", "scheme")
@@ -165,20 +165,20 @@ class FlickrAPITests: XCTestCase {
         let client = HttpClientSpy()
         let sut = FlickrAPI(client: client)
         
-        sut.searchImages(endPoint: searchImagesEndPoint, completion: { _ in })
+        sut.searchPhotos(endPoint: searchPhotosEndPoint, completion: { _ in })
         let ep = client.endPoint as! FlickrEndPoint
         let url = client.url
         
         XCTAssertEqual(url?.absoluteString, "https://www.flickr.com/services/rest/?api_key=\(ep.apiKey)&method=flickr.photos.search&text=aaa&page=1&per_page=20&format=json")
     }
     
-    func test_searchImages_handleInvalidURL() {
+    func test_searchPhotos_handleInvalidURL() {
         let invalidUrlErr = NetworkError.invalidURL(flickrMethod: "flickr.photos.search")
         let client = FailureHttpClient(networkErr: invalidUrlErr)
         let sut = FlickrAPI(client: client)
         
         var networkErr: NetworkError?
-        sut.searchImages(endPoint: searchImagesEndPoint) { result in
+        sut.searchPhotos(endPoint: searchPhotosEndPoint) { result in
             switch result {
             case .failure(let err):
                 networkErr = err
@@ -190,13 +190,13 @@ class FlickrAPITests: XCTestCase {
         XCTAssertEqual(networkErr?.errorMessage, "Invalid URL of flickrMethod: flickr.photos.search.")
     }
     
-    func test_searchImages_completeWithFlickrError() {
+    func test_searchPhotos_completeWithFlickrError() {
         let searchPotos = SearchPhotos(photos: nil, stat: "fail", code: 100, message: "Invalid API Key (Key has invalid format)")
         let client = FailureHttpClient(flickrErrorSearchPhotos: searchPotos)
         let sut = FlickrAPI(client: client)
         
         var networkErr: NetworkError?
-        sut.searchImages(endPoint: searchImagesEndPoint) { result in
+        sut.searchPhotos(endPoint: searchPhotosEndPoint) { result in
             switch result {
             case .failure(let err):
                 networkErr = err
@@ -208,14 +208,14 @@ class FlickrAPITests: XCTestCase {
         XCTAssertEqual(networkErr?.errorMessage, "Code: 100, Invalid API Key (Key has invalid format)")
     }
     
-    func test_searchImages_completeWithEmptySearchedPhotos() {
+    func test_searchPhotos_completeWithEmptySearchedPhotos() {
         let photos = Photos(page: 1, pages: 0, perpage: 20, total: 0, photo: [])
         let searchPotos = SearchPhotos(photos: photos, stat: "ok", code: nil, message: nil)
         let client = SuccessHttpClient(searchPhotos: searchPotos)
         let sut = FlickrAPI(client: client)
         
         var sp: SearchPhotos?
-        sut.searchImages(endPoint: searchImagesEndPoint) { result in
+        sut.searchPhotos(endPoint: searchPhotosEndPoint) { result in
             switch result {
             case .success(let searchPhotos):
                 sp = searchPhotos
@@ -236,8 +236,8 @@ class FlickrAPITests: XCTestCase {
 
 // MARK: Helpers
 extension FlickrAPITests {
-    var searchImagesEndPoint: FlickrEndPoint {
-        .searchImages(searchTerm: "aaa", page: 1)
+    var searchPhotosEndPoint: FlickrEndPoint {
+        .searchPhotos(searchTerm: "aaa", page: 1)
     }
 }
 
