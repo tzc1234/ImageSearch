@@ -20,6 +20,11 @@
 		BE41A96A28A26226000EB7DC /* ImageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE41A96928A26226000EB7DC /* ImageViewModel.swift */; };
 		BE41A96D28A2638B000EB7DC /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE41A96C28A2638B000EB7DC /* DataService.swift */; };
 		BE4D71E728A8FC4700A1EE0E /* FlickrAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE4D71E628A8FC4700A1EE0E /* FlickrAPITests.swift */; };
+		BE7E5CC928A97F950072BF6D /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E5CC828A97F950072BF6D /* Models.swift */; };
+		BE7E5CCC28A97FEB0072BF6D /* HttpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E5CCB28A97FEB0072BF6D /* HttpClient.swift */; };
+		BE7E5CCE28A980200072BF6D /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E5CCD28A980200072BF6D /* NetworkError.swift */; };
+		BE7E5CD028A980580072BF6D /* EndPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E5CCF28A980580072BF6D /* EndPoint.swift */; };
+		BE7E5CD228A980A60072BF6D /* FlickrAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E5CD128A980A60072BF6D /* FlickrAPI.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +54,11 @@
 		BE41A96928A26226000EB7DC /* ImageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewModel.swift; sourceTree = "<group>"; };
 		BE41A96C28A2638B000EB7DC /* DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataService.swift; sourceTree = "<group>"; };
 		BE4D71E628A8FC4700A1EE0E /* FlickrAPITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlickrAPITests.swift; sourceTree = "<group>"; };
+		BE7E5CC828A97F950072BF6D /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		BE7E5CCB28A97FEB0072BF6D /* HttpClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpClient.swift; sourceTree = "<group>"; };
+		BE7E5CCD28A980200072BF6D /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
+		BE7E5CCF28A980580072BF6D /* EndPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndPoint.swift; sourceTree = "<group>"; };
+		BE7E5CD128A980A60072BF6D /* FlickrAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlickrAPI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +105,7 @@
 				BE41A96128A260C2000EB7DC /* ViewModels */,
 				BE41A96028A260A9000EB7DC /* Views */,
 				BE41A96B28A2636E000EB7DC /* DataServices */,
+				BE7E5CC628A97F6D0072BF6D /* Networkings */,
 				BE35358F289FA7F000BB6B3E /* Assets.xcassets */,
 				BE353591289FA7F000BB6B3E /* LaunchScreen.storyboard */,
 				BE353594289FA7F000BB6B3E /* Info.plist */,
@@ -137,6 +148,18 @@
 				BE41A96C28A2638B000EB7DC /* DataService.swift */,
 			);
 			path = DataServices;
+			sourceTree = "<group>";
+		};
+		BE7E5CC628A97F6D0072BF6D /* Networkings */ = {
+			isa = PBXGroup;
+			children = (
+				BE7E5CC828A97F950072BF6D /* Models.swift */,
+				BE7E5CCD28A980200072BF6D /* NetworkError.swift */,
+				BE7E5CCF28A980580072BF6D /* EndPoint.swift */,
+				BE7E5CCB28A97FEB0072BF6D /* HttpClient.swift */,
+				BE7E5CD128A980A60072BF6D /* FlickrAPI.swift */,
+			);
+			path = Networkings;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -243,10 +266,15 @@
 				BE41A96A28A26226000EB7DC /* ImageViewModel.swift in Sources */,
 				BE41A96D28A2638B000EB7DC /* DataService.swift in Sources */,
 				BE353587289FA7F000BB6B3E /* AppDelegate.swift in Sources */,
+				BE7E5CD228A980A60072BF6D /* FlickrAPI.swift in Sources */,
+				BE7E5CC928A97F950072BF6D /* Models.swift in Sources */,
+				BE7E5CD028A980580072BF6D /* EndPoint.swift in Sources */,
+				BE7E5CCC28A97FEB0072BF6D /* HttpClient.swift in Sources */,
 				BE41A96628A2615B000EB7DC /* ImageTableViewCell.swift in Sources */,
 				BE353589289FA7F000BB6B3E /* SceneDelegate.swift in Sources */,
 				BE41A96828A26198000EB7DC /* LoadingView.swift in Sources */,
 				BE41A96328A260FE000EB7DC /* ImageSearchViewController.swift in Sources */,
+				BE7E5CCE28A980200072BF6D /* NetworkError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
