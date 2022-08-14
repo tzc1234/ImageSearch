@@ -89,13 +89,13 @@ enum FlickrEndPoint: EndPoint {
 }
 
 enum NetworkError: Error {
-    case invalidURL(flickrMethod: String)
+    case invalidURL
     case flickrError(code: Int, message: String)
     
     var errorMessage: String {
         switch self {
-        case .invalidURL(let flickrMethod):
-            return "Invalid URL of flickrMethod: \(flickrMethod)."
+        case .invalidURL:
+            return "Invalid URL."
         case .flickrError(let code, let message):
             return "Code: \(code), \(message)"
         }
@@ -182,7 +182,7 @@ class FlickrAPITests: XCTestCase {
     }
     
     func test_searchPhotos_handleInvalidURL() {
-        let invalidUrlErr = NetworkError.invalidURL(flickrMethod: "flickr.photos.search")
+        let invalidUrlErr = NetworkError.invalidURL
         let client = FailureHttpClient(networkErr: invalidUrlErr)
         let sut = FlickrAPI(client: client)
         
@@ -196,7 +196,7 @@ class FlickrAPITests: XCTestCase {
             }
         }
         
-        XCTAssertEqual(networkErr?.errorMessage, "Invalid URL of flickrMethod: flickr.photos.search.")
+        XCTAssertEqual(networkErr?.errorMessage, "Invalid URL.")
     }
     
     func test_searchPhotos_completeWithFlickrError() {
@@ -288,6 +288,26 @@ class FlickrAPITests: XCTestCase {
         
         XCTAssertEqual(url?.absoluteString, "https://live.staticflickr.com/server/id0_secret_b.jpg")
     }
+    
+    func test_getPhotoData_completeWithInvalidUrlError() {
+        let photo = makePhoto(id: "id0")
+        let error = NetworkError.invalidURL
+        let client = FailureHttpClient(networkErr: error)
+        let sut = FlickrAPI(client: client)
+        
+        var networkError: NetworkError?
+        sut.getPhotoData(endPoint: .photoData(photo: photo)) { result in
+            switch result {
+            case .failure(let error):
+                networkError = error
+            default:
+                break
+            }
+        }
+        
+        XCTAssertEqual(networkError?.errorMessage, error.errorMessage)
+    }
+    
 }
 
 
