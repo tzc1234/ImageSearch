@@ -86,11 +86,14 @@ enum FlickrEndPoint: EndPoint {
 
 enum NetworkError: Error {
     case invalidURL(flickrMethod: String)
+    case flickrError(code: Int, message: String)
     
     var errorMessage: String {
         switch self {
         case .invalidURL(let flickrMethod):
             return "Invalid URL of flickrMethod: \(flickrMethod)."
+        case .flickrError(let code, let message):
+            return "Code: \(code), \(message)"
         }
     }
 }
@@ -112,8 +115,10 @@ class FlickrAPI {
 }
 
 struct SearchPhotos: Codable {
-    let photos: Photos
+    let photos: Photos?
     let stat: String
+    let code: Int?
+    let message: String?
 }
 
 struct Photos: Codable {
@@ -185,10 +190,27 @@ class FlickrAPITests: XCTestCase {
         XCTAssertEqual(networkErr?.errorMessage, "Invalid URL of flickrMethod: flickr.photos.search.")
     }
     
+    func test_searchImages_completeWithFlickrError() {
+        let searchPotos = SearchPhotos(photos: nil, stat: "fail", code: 100, message: "Invalid API Key (Key has invalid format)")
+        let client = FailureHttpClient(flickrErrorSearchPhotos: searchPotos)
+        let sut = FlickrAPI(client: client)
+        
+        var networkErr: NetworkError?
+        sut.searchImages(endPoint: searchImagesEndPoint) { result in
+            switch result {
+            case .failure(let err):
+                networkErr = err
+            default:
+                break
+            }
+        }
+        
+        XCTAssertEqual(networkErr?.errorMessage, "Code: 100, Invalid API Key (Key has invalid format)")
+    }
+    
     func test_searchImages_completeWithEmptySearchedPhotos() {
         let photos = Photos(page: 1, pages: 0, perpage: 20, total: 0, photo: [])
-        let searchPotos = SearchPhotos(photos: photos, stat: "ok")
-        
+        let searchPotos = SearchPhotos(photos: photos, stat: "ok", code: nil, message: nil)
         let client = SuccessHttpClient(searchPhotos: searchPotos)
         let sut = FlickrAPI(client: client)
         
@@ -203,11 +225,11 @@ class FlickrAPITests: XCTestCase {
         }
         
         XCTAssertEqual(sp?.stat, "ok", "state")
-        XCTAssertEqual(sp?.photos.photo.count, 0, "photo count")
-        XCTAssertEqual(sp?.photos.page, 1, "page")
-        XCTAssertEqual(sp?.photos.pages, 0 , "pages")
-        XCTAssertEqual(sp?.photos.perpage, 20, "perpage")
-        XCTAssertEqual(sp?.photos.total, 0, "total")
+        XCTAssertEqual(sp?.photos?.photo.count, 0, "photo count")
+        XCTAssertEqual(sp?.photos?.page, 1, "page")
+        XCTAssertEqual(sp?.photos?.pages, 0 , "pages")
+        XCTAssertEqual(sp?.photos?.perpage, 20, "perpage")
+        XCTAssertEqual(sp?.photos?.total, 0, "total")
     }
     
 }
@@ -240,6 +262,10 @@ class FailureHttpClient: HttpClient {
     
     init(networkErr: NetworkError) {
         self.networkErr = networkErr
+    }
+    
+    init(flickrErrorSearchPhotos: SearchPhotos) {
+        self.networkErr = NetworkError.flickrError(code: flickrErrorSearchPhotos.code!, message: flickrErrorSearchPhotos.message!)
     }
     
     func request<T>(endPoint: EndPoint, completion: @escaping (Result<T, NetworkError>) -> Void) {
