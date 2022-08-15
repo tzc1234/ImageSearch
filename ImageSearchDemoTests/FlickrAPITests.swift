@@ -66,8 +66,8 @@ class FlickrAPITests: XCTestCase {
     }
     
     func test_searchPhotos_completeWithFlickrError() {
-        let searchPotos = SearchPhotos(photos: nil, stat: "fail", code: 100, message: "Invalid API Key (Key has invalid format)")
-        let client = FailureHttpClientStub(flickrErrorSearchPhotos: searchPotos)
+        let flickrError = flickrError
+        let client = FailureHttpClientStub(flickrError: flickrError)
         let sut = FlickrAPI(client: client)
         
         var networkErr: NetworkError?
@@ -85,7 +85,7 @@ class FlickrAPITests: XCTestCase {
     
     func test_searchPhotos_completeWithEmptySearchedPhotos() {
         let photos = Photos(page: 1, pages: 0, perpage: 20, total: 0, photo: [])
-        let searchPotos = SearchPhotos(photos: photos, stat: "ok", code: nil, message: nil)
+        let searchPotos = SearchPhotos(photos: photos, stat: "ok")
         let client = SuccessHttpClientStub(searchPhotos: searchPotos)
         let sut = FlickrAPI(client: client)
         
@@ -104,7 +104,7 @@ class FlickrAPITests: XCTestCase {
     
     func test_searchPhotos_completeWithOneSearchedPhotos() {
         let photos = Photos(page: 1, pages: 1, perpage: 20, total: 1, photo: [makePhoto(id: "id0")])
-        let searchPotos = SearchPhotos(photos: photos, stat: "ok", code: nil, message: nil)
+        let searchPotos = SearchPhotos(photos: photos, stat: "ok")
         let client = SuccessHttpClientStub(searchPhotos: searchPotos)
         let sut = FlickrAPI(client: client)
         
@@ -127,7 +127,7 @@ class FlickrAPITests: XCTestCase {
             makePhoto(id: "id1"),
             makePhoto(id: "id2")
         ])
-        let searchPotos = SearchPhotos(photos: photos, stat: "ok", code: nil, message: nil)
+        let searchPotos = SearchPhotos(photos: photos, stat: "ok")
         let client = SuccessHttpClientStub(searchPhotos: searchPotos)
         let sut = FlickrAPI(client: client)
         
@@ -248,6 +248,10 @@ extension FlickrAPITests {
     func makePhoto(id: String) -> Photo {
         Photo(id: id, owner: "owner", secret: "secret", server: "server", farm: 0, title: "title", ispublic: 0, isfriend: 0, isfamily: 0)
     }
+    
+    var flickrError: FlickrError {
+        FlickrError(stat: "fail", code: 100, message: "Invalid API Key (Key has invalid format)")
+    }
 }
 
 class HttpClientSpy: HttpClient {
@@ -281,8 +285,8 @@ class FailureHttpClientStub: HttpClient {
         self.networkErr = networkErr
     }
     
-    init(flickrErrorSearchPhotos: SearchPhotos) {
-        self.networkErr = NetworkError.flickrError(code: flickrErrorSearchPhotos.code!, message: flickrErrorSearchPhotos.message!)
+    init(flickrError: FlickrError) {
+        self.networkErr = NetworkError.flickrError(code: flickrError.code, message: flickrError.message)
     }
     
     func request<T>(endPoint: EndPoint, completion: @escaping (Result<T, NetworkError>) -> Void) {

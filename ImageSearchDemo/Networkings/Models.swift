@@ -7,11 +7,15 @@
 
 import Foundation
 
-struct SearchPhotos: Codable, Equatable {
-    let photos: Photos?
+struct FlickrError: Codable, Equatable {
     let stat: String
-    let code: Int?
-    let message: String?
+    let code: Int
+    let message: String
+}
+
+struct SearchPhotos: Codable, Equatable {
+    let photos: Photos
+    let stat: String
 }
 
 struct Photos: Codable, Equatable {
