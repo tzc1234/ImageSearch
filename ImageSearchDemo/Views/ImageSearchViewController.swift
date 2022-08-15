@@ -90,11 +90,7 @@ class ImageSearchViewController: UIViewController, UISearchResultsUpdating, UITa
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard
-            let cell = tableView.dequeueReusableCell(withIdentifier: ImageTableViewCell.identifier, for: indexPath) as? ImageTableViewCell
-        else {
-            return ImageTableViewCell()
-        }
+        let cell = tableView.dequeueReusableCell(withIdentifier: ImageTableViewCell.identifier, for: indexPath) as? ImageTableViewCell ?? ImageTableViewCell()
         
         cell.viewModel = imageViewModels[indexPath.row]
         
