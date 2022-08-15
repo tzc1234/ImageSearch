@@ -16,7 +16,7 @@ class FlickrAPITests: XCTestCase {
         let searchTerm = "aaa"
         let page = 1
         
-        sut.searchPhotos(endPoint: .searchPhotos(searchTerm: searchTerm, page: page), completion: { _ in })
+        sut.searchPhotos(by: "aaa", page: 1, completion: { _ in })
         let ep = client.endPoint as! FlickrEndPoint
         
         XCTAssertEqual(ep.scheme, "https", "scheme")
@@ -40,7 +40,7 @@ class FlickrAPITests: XCTestCase {
         let client = HttpClientSpy()
         let sut = FlickrAPI(client: client)
         
-        sut.searchPhotos(endPoint: searchPhotosEndPoint, completion: { _ in })
+        sut.searchPhotos(by: "aaa", page: 1, completion: { _ in })
         let ep = client.endPoint as! FlickrEndPoint
         let url = client.url
         
@@ -53,7 +53,7 @@ class FlickrAPITests: XCTestCase {
         let sut = FlickrAPI(client: client)
         
         var networkErr: NetworkError?
-        sut.searchPhotos(endPoint: searchPhotosEndPoint) { result in
+        sut.searchPhotos(by: "aaa", page: 1) { result in
             switch result {
             case .failure(let err):
                 networkErr = err
@@ -71,7 +71,7 @@ class FlickrAPITests: XCTestCase {
         let sut = FlickrAPI(client: client)
         
         var networkErr: NetworkError?
-        sut.searchPhotos(endPoint: searchPhotosEndPoint) { result in
+        sut.searchPhotos(by: "aaa", page: 1) { result in
             switch result {
             case .failure(let err):
                 networkErr = err
@@ -90,7 +90,7 @@ class FlickrAPITests: XCTestCase {
         let sut = FlickrAPI(client: client)
         
         var sp: SearchPhotos?
-        sut.searchPhotos(endPoint: searchPhotosEndPoint) { result in
+        sut.searchPhotos(by: "aaa", page: 1) { result in
             switch result {
             case .success(let searchPhotos):
                 sp = searchPhotos
@@ -109,7 +109,7 @@ class FlickrAPITests: XCTestCase {
         let sut = FlickrAPI(client: client)
         
         var sp: SearchPhotos?
-        sut.searchPhotos(endPoint: searchPhotosEndPoint) { result in
+        sut.searchPhotos(by: "aaa", page: 1) { result in
             switch result {
             case .success(let searchPhotos):
                 sp = searchPhotos
@@ -132,7 +132,7 @@ class FlickrAPITests: XCTestCase {
         let sut = FlickrAPI(client: client)
         
         var sp: SearchPhotos?
-        sut.searchPhotos(endPoint: searchPhotosEndPoint) { result in
+        sut.searchPhotos(by: "aaa", page: 1) { result in
             switch result {
             case .success(let searchPhotos):
                 sp = searchPhotos
@@ -211,7 +211,7 @@ class FlickrAPITests: XCTestCase {
         let sut = FlickrAPI(client: client)
         
         var networkError: NetworkError?
-        sut.searchPhotos(endPoint: searchPhotosEndPoint) { result in
+        sut.searchPhotos(by: "aaa", page: 1) { result in
             switch result {
             case .failure(let error):
                 networkError = error
@@ -245,10 +245,6 @@ class FlickrAPITests: XCTestCase {
 
 // MARK: - Helpers
 extension FlickrAPITests {
-    var searchPhotosEndPoint: FlickrEndPoint {
-        .searchPhotos(searchTerm: "aaa", page: 1)
-    }
-    
     func makePhoto(id: String) -> Photo {
         Photo(id: id, owner: "owner", secret: "secret", server: "server", farm: 0, title: "title", ispublic: 0, isfriend: 0, isfamily: 0)
     }

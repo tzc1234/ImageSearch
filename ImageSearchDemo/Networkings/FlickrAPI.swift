@@ -14,8 +14,8 @@ class FlickrAPI {
         self.client = client
     }
     
-    func searchPhotos(endPoint: FlickrEndPoint, completion: @escaping (Result<SearchPhotos, NetworkError>) -> Void) {
-        client.request(endPoint: endPoint, completion: completion)
+    func searchPhotos(by searchTerm: String, page: Int, completion: @escaping (Result<SearchPhotos, NetworkError>) -> Void) {
+        client.request(endPoint: FlickrEndPoint.searchPhotos(searchTerm: searchTerm, page: page), completion: completion)
     }
     
     func getPhotoData(by photo: Photo, completion: @escaping (Result<Data, NetworkError>) -> Void) {
