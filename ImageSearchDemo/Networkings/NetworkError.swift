@@ -10,6 +10,7 @@ import Foundation
 enum NetworkError: Error {
     case invalidURL
     case flickrError(code: Int, message: String)
+    case invalidServerResponse
     
     var errorMessage: String {
         switch self {
@@ -17,6 +18,8 @@ enum NetworkError: Error {
             return "Invalid URL."
         case .flickrError(let code, let message):
             return "Code: \(code), \(message)"
+        case .invalidServerResponse:
+            return "Invalid server response."
         }
     }
 }

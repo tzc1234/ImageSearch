@@ -148,7 +148,7 @@ class FlickrAPITests: XCTestCase {
         let client = HttpClientSpy()
         let sut = FlickrAPI(client: client)
         
-        sut.getPhotoData(endPoint: photoDataEndPoint, completion: { _ in })
+        sut.getPhotoData(by: makePhoto(id: "id0"), completion: { _ in })
         let ep = client.endPoint as! FlickrEndPoint
         
         XCTAssertEqual(ep.scheme, "https", "scheme")
@@ -163,7 +163,7 @@ class FlickrAPITests: XCTestCase {
         let client = HttpClientSpy()
         let sut = FlickrAPI(client: client)
         
-        sut.getPhotoData(endPoint: photoDataEndPoint, completion: { _ in })
+        sut.getPhotoData(by: makePhoto(id: "id0"), completion: { _ in })
         let url = client.url
         
         XCTAssertEqual(url?.absoluteString, "https://live.staticflickr.com/server/id0_secret_b.jpg")
@@ -175,7 +175,7 @@ class FlickrAPITests: XCTestCase {
         let sut = FlickrAPI(client: client)
         
         var networkError: NetworkError?
-        sut.getPhotoData(endPoint: photoDataEndPoint) { result in
+        sut.getPhotoData(by: makePhoto(id: "id0")) { result in
             switch result {
             case .failure(let error):
                 networkError = error
@@ -193,7 +193,7 @@ class FlickrAPITests: XCTestCase {
         let sut = FlickrAPI(client: client)
         
         var photoData: Data?
-        sut.getPhotoData(endPoint: photoDataEndPoint) { result in
+        sut.getPhotoData(by: makePhoto(id: "id0")) { result in
             switch result {
             case .success(let data):
                 photoData = data
@@ -205,16 +205,48 @@ class FlickrAPITests: XCTestCase {
         XCTAssertEqual(photoData, imageData)
     }
     
+    func test_searchPhotos_completeWithInvalidServerResponseError() {
+        let error = NetworkError.invalidServerResponse
+        let client = FailureHttpClientStub(networkErr: error)
+        let sut = FlickrAPI(client: client)
+        
+        var networkError: NetworkError?
+        sut.searchPhotos(endPoint: searchPhotosEndPoint) { result in
+            switch result {
+            case .failure(let error):
+                networkError = error
+            default:
+                break
+            }
+        }
+        
+        XCTAssertEqual(networkError?.errorMessage, error.errorMessage)
+    }
+    
+    func test_getPhotoData_completeWithInvalidServerResponseError() {
+        let error = NetworkError.invalidServerResponse
+        let client = FailureHttpClientStub(networkErr: error)
+        let sut = FlickrAPI(client: client)
+        
+        var networkError: NetworkError?
+        sut.getPhotoData(by: makePhoto(id: "id0")) { result in
+            switch result {
+            case .failure(let error):
+                networkError = error
+            default:
+                break
+            }
+        }
+        
+        XCTAssertEqual(networkError?.errorMessage, error.errorMessage)
+    }
+    
 }
 
 // MARK: - Helpers
 extension FlickrAPITests {
     var searchPhotosEndPoint: FlickrEndPoint {
         .searchPhotos(searchTerm: "aaa", page: 1)
-    }
-    
-    var photoDataEndPoint: FlickrEndPoint {
-        .photoData(photo: makePhoto(id: "id0"))
     }
     
     func makePhoto(id: String) -> Photo {
