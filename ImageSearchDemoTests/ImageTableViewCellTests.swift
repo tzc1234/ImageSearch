@@ -29,6 +29,21 @@ class ImageTableViewCellTests: XCTestCase {
         XCTAssertIdentical(sut.photoImageView.image, image)
     }
     
+    func test_photoImageView_initalWithPlaceholderImage() {
+        let sut = makeSUT()
+        
+        XCTAssertIdentical(sut.photoImageView.image, UIImage(systemName: "photo"))
+    }
+    
+    func test_photoImageView_displayPlaceholderIfImageIsNil() {
+        let sut = makeSUT()
+        let viewModel = ImageViewModel(image: nil, title: "")
+        
+        sut.viewModel = viewModel
+        
+        XCTAssertIdentical(sut.photoImageView.image, UIImage(systemName: "photo"))
+    }
+    
 }
 
 // MARK: - Helpers

@@ -23,27 +23,27 @@ class ImageTableViewCell: UITableViewCell {
     let bgView: UIView = {
         let bg = UIView()
         bg.layer.cornerRadius = 12
+        bg.layer.borderWidth = 1
+        bg.layer.borderColor = UIColor.systemGray5.cgColor
         bg.clipsToBounds = true
-        bg.backgroundColor = .systemYellow
         return bg
     }()
     let photoImageView: UIImageView = {
-        let iv = UIImageView()
-        iv.contentMode = .scaleToFill
-        iv.backgroundColor = .systemRed
+        let iv = UIImageView(image: UIImage(systemName: "photo"))
+        iv.tintColor = .systemGray
+        iv.contentMode = .scaleAspectFit
         return iv
     }()
     let titleLabel: UILabel = {
         let l = UILabel()
         l.font = .systemFont(ofSize: 14, weight: .light)
-        l.backgroundColor = .systemGreen
         l.numberOfLines = 0
         return l
     }()
     
     var viewModel: ImageViewModel? {
         didSet {
-            photoImageView.image = viewModel?.image
+            photoImageView.image = viewModel?.image ?? UIImage(systemName: "photo")
             titleLabel.text = viewModel?.title
         }
     }
